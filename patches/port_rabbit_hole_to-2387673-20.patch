@@ -1,0 +1,5171 @@
+From 55bb06c6d4ebfad9fee49c79a391594244785c47 Mon Sep 17 00:00:00 2001
+From: Dylan Donkersgoed <dylandonkersgoed@gmail.com>
+Date: Sat, 9 Apr 2016 21:24:15 -0400
+Subject: [PATCH] 2387673-20
+
+---
+ README.txt                                         |   5 -
+ .../rabbit_hole.behavior_settings.default.yml      |   7 +
+ ...abbit_hole.behavior_settings.default_bundle.yml |   7 +
+ config/schema/behavior_settings.schema.yml         |  21 +
+ modules/rh_file/rh-file.js                         |  18 -
+ modules/rh_file/rh_file.info                       |   5 -
+ modules/rh_file/rh_file.module                     | 138 ----
+ modules/rh_node/rh-node.js                         |  24 +-
+ modules/rh_node/rh_node.info                       |   5 -
+ modules/rh_node/rh_node.info.yml                   |   7 +
+ modules/rh_node/rh_node.libraries.yml              |   6 +
+ modules/rh_node/rh_node.module                     |  94 +--
+ .../src/Plugin/RabbitHoleEntityPlugin/Node.php     |  33 +
+ .../Tests/BehaviorSettingsFormAlterationsTest.php  | 297 ++++++++
+ modules/rh_node/src/Tests/InvocationTest.php       | 177 +++++
+ modules/rh_taxonomy/rh_taxonomy.info               |   5 -
+ modules/rh_taxonomy/rh_taxonomy.install            |  13 -
+ modules/rh_taxonomy/rh_taxonomy.module             |  97 ---
+ modules/rh_user/rh_user.info                       |   5 -
+ modules/rh_user/rh_user.info.yml                   |   7 +
+ modules/rh_user/rh_user.module                     |  92 +--
+ .../src/Plugin/RabbitHoleEntityPlugin/User.php     |  46 ++
+ rabbit_hole.info                                   |   3 -
+ rabbit_hole.info.yml                               |   5 +
+ rabbit_hole.install                                | 117 ----
+ rabbit_hole.module                                 | 748 ++-------------------
+ rabbit_hole.permissions.yml                        |   2 +
+ rabbit_hole.services.yml                           |  39 ++
+ src/Annotation/RabbitHoleBehaviorPlugin.php        |  38 ++
+ src/Annotation/RabbitHoleEntityPlugin.php          |  45 ++
+ src/BehaviorInvoker.php                            | 177 +++++
+ src/BehaviorInvokerInterface.php                   |  18 +
+ src/BehaviorSettingsInterface.php                  |  79 +++
+ src/BehaviorSettingsManager.php                    | 105 +++
+ src/BehaviorSettingsManagerInterface.php           |  62 ++
+ src/Entity/BehaviorSettings.php                    | 162 +++++
+ src/EntityExtender.php                             |  79 +++
+ src/EntityExtenderInterface.php                    |  21 +
+ src/EventSubscriber/RabbitHoleSubscriber.php       | 105 +++
+ src/Exception/InvalidBehaviorSettingException.php  |  31 +
+ src/Exception/InvalidRedirectResponseException.php |  21 +
+ src/FormManglerService.php                         | 362 ++++++++++
+ .../RabbitHoleBehaviorPlugin/AccessDenied.php      |  31 +
+ .../RabbitHoleBehaviorPlugin/DisplayPage.php       |  22 +
+ .../RabbitHoleBehaviorPlugin/PageNotFound.php      |  31 +
+ .../RabbitHoleBehaviorPlugin/PageRedirect.php      | 245 +++++++
+ src/Plugin/RabbitHoleBehaviorPluginBase.php        |  54 ++
+ src/Plugin/RabbitHoleBehaviorPluginInterface.php   |  76 +++
+ src/Plugin/RabbitHoleBehaviorPluginManager.php     |  36 +
+ src/Plugin/RabbitHoleEntityPluginBase.php          |  45 ++
+ src/Plugin/RabbitHoleEntityPluginInterface.php     |  64 ++
+ src/Plugin/RabbitHoleEntityPluginManager.php       | 121 ++++
+ src/RabbitHolePermissionGenerator.php              |  75 +++
+ src/Tests/RabbitHoleBehaviorPluginTest.php         | 142 ++++
+ ...RabbitHoleBehaviorSettingsEntityMethodsTest.php | 185 +++++
+ src/Tests/RabbitHoleBehaviorSettingsTest.php       | 197 ++++++
+ 56 files changed, 3360 insertions(+), 1292 deletions(-)
+ delete mode 100644 README.txt
+ create mode 100644 config/install/rabbit_hole.behavior_settings.default.yml
+ create mode 100644 config/install/rabbit_hole.behavior_settings.default_bundle.yml
+ create mode 100644 config/schema/behavior_settings.schema.yml
+ delete mode 100644 modules/rh_file/rh-file.js
+ delete mode 100644 modules/rh_file/rh_file.info
+ delete mode 100644 modules/rh_file/rh_file.module
+ delete mode 100644 modules/rh_node/rh_node.info
+ create mode 100644 modules/rh_node/rh_node.info.yml
+ create mode 100644 modules/rh_node/rh_node.libraries.yml
+ create mode 100644 modules/rh_node/src/Plugin/RabbitHoleEntityPlugin/Node.php
+ create mode 100644 modules/rh_node/src/Tests/BehaviorSettingsFormAlterationsTest.php
+ create mode 100644 modules/rh_node/src/Tests/InvocationTest.php
+ delete mode 100644 modules/rh_taxonomy/rh_taxonomy.info
+ delete mode 100644 modules/rh_taxonomy/rh_taxonomy.install
+ delete mode 100644 modules/rh_taxonomy/rh_taxonomy.module
+ delete mode 100644 modules/rh_user/rh_user.info
+ create mode 100644 modules/rh_user/rh_user.info.yml
+ create mode 100644 modules/rh_user/src/Plugin/RabbitHoleEntityPlugin/User.php
+ delete mode 100644 rabbit_hole.info
+ create mode 100644 rabbit_hole.info.yml
+ delete mode 100644 rabbit_hole.install
+ create mode 100644 rabbit_hole.permissions.yml
+ create mode 100644 rabbit_hole.services.yml
+ create mode 100644 src/Annotation/RabbitHoleBehaviorPlugin.php
+ create mode 100644 src/Annotation/RabbitHoleEntityPlugin.php
+ create mode 100644 src/BehaviorInvoker.php
+ create mode 100644 src/BehaviorInvokerInterface.php
+ create mode 100644 src/BehaviorSettingsInterface.php
+ create mode 100644 src/BehaviorSettingsManager.php
+ create mode 100644 src/BehaviorSettingsManagerInterface.php
+ create mode 100644 src/Entity/BehaviorSettings.php
+ create mode 100644 src/EntityExtender.php
+ create mode 100644 src/EntityExtenderInterface.php
+ create mode 100644 src/EventSubscriber/RabbitHoleSubscriber.php
+ create mode 100644 src/Exception/InvalidBehaviorSettingException.php
+ create mode 100644 src/Exception/InvalidRedirectResponseException.php
+ create mode 100644 src/FormManglerService.php
+ create mode 100644 src/Plugin/RabbitHoleBehaviorPlugin/AccessDenied.php
+ create mode 100644 src/Plugin/RabbitHoleBehaviorPlugin/DisplayPage.php
+ create mode 100644 src/Plugin/RabbitHoleBehaviorPlugin/PageNotFound.php
+ create mode 100644 src/Plugin/RabbitHoleBehaviorPlugin/PageRedirect.php
+ create mode 100644 src/Plugin/RabbitHoleBehaviorPluginBase.php
+ create mode 100644 src/Plugin/RabbitHoleBehaviorPluginInterface.php
+ create mode 100644 src/Plugin/RabbitHoleBehaviorPluginManager.php
+ create mode 100644 src/Plugin/RabbitHoleEntityPluginBase.php
+ create mode 100644 src/Plugin/RabbitHoleEntityPluginInterface.php
+ create mode 100644 src/Plugin/RabbitHoleEntityPluginManager.php
+ create mode 100644 src/RabbitHolePermissionGenerator.php
+ create mode 100644 src/Tests/RabbitHoleBehaviorPluginTest.php
+ create mode 100644 src/Tests/RabbitHoleBehaviorSettingsEntityMethodsTest.php
+ create mode 100644 src/Tests/RabbitHoleBehaviorSettingsTest.php
+
+diff --git a/README.txt b/README.txt
+deleted file mode 100644
+index 360b526..0000000
+--- a/README.txt
++++ /dev/null
+@@ -1,5 +0,0 @@
+-Rabbit Hole is a module that adds the ability to control what should happen when
+-an entity is being viewed at its own page.
+-
+-Please refer to the full project page at http://drupal.org/project/rabbit_hole
+-for further information.
+diff --git a/config/install/rabbit_hole.behavior_settings.default.yml b/config/install/rabbit_hole.behavior_settings.default.yml
+new file mode 100644
+index 0000000..016504a
+--- /dev/null
++++ b/config/install/rabbit_hole.behavior_settings.default.yml
+@@ -0,0 +1,7 @@
++id: default
++action: "display_page"
++# Allow
++allow_override: 1
++# N/A
++redirect_code: 0
++redirect: ''
+diff --git a/config/install/rabbit_hole.behavior_settings.default_bundle.yml b/config/install/rabbit_hole.behavior_settings.default_bundle.yml
+new file mode 100644
+index 0000000..5504cb3
+--- /dev/null
++++ b/config/install/rabbit_hole.behavior_settings.default_bundle.yml
+@@ -0,0 +1,7 @@
++id: default_bundle
++action: "display_page"
++# Allow
++allow_override: 1
++# N/A
++redirect_code: 0
++redirect: ''
+diff --git a/config/schema/behavior_settings.schema.yml b/config/schema/behavior_settings.schema.yml
+new file mode 100644
+index 0000000..80fbd17
+--- /dev/null
++++ b/config/schema/behavior_settings.schema.yml
+@@ -0,0 +1,21 @@
++rabbit_hole.behavior_settings.*:
++  type: config_entity
++  label: 'Behavior settings config'
++  mapping:
++    id:
++      type: string
++      label: 'ID'
++    uuid:
++      type: string
++    action:
++      type: string
++      label: 'Action'
++    allow_override:
++      type: integer
++      label: 'Allow override'
++    redirect:
++      type: string
++      label: 'Redirect path'
++    redirect_code:
++      type: integer
++      label: 'Redirect code'
+diff --git a/modules/rh_file/rh-file.js b/modules/rh_file/rh-file.js
+deleted file mode 100644
+index 02b1c20..0000000
+--- a/modules/rh_file/rh-file.js
++++ /dev/null
+@@ -1,18 +0,0 @@
+-(function($) {
+-
+-Drupal.behaviors.rhFile = {
+-  attach: function (context, settings) {
+-
+-    // Set the summary for the settings form.
+-    $('fieldset.rabbit-hole-settings-form').drupalSetSummary(function() {
+-      var $rabbitHoleAction = $('.rabbit-hole-action-setting input:checked');
+-
+-      // Get the label of the selected action.
+-      var summary = $('label[for=' + $rabbitHoleAction.attr('id') + ']').text();
+-      return Drupal.checkPlain(summary);
+-    });
+-
+-  }
+-}
+-
+-})(jQuery);
+diff --git a/modules/rh_file/rh_file.info b/modules/rh_file/rh_file.info
+deleted file mode 100644
+index 8bc35a4..0000000
+--- a/modules/rh_file/rh_file.info
++++ /dev/null
+@@ -1,5 +0,0 @@
+-name = Rabbit Hole files
+-description = Adds Rabbit Hole functionality for files.
+-core = 7.x
+-dependencies[] = rabbit_hole
+-dependencies[] = file_entity
+diff --git a/modules/rh_file/rh_file.module b/modules/rh_file/rh_file.module
+deleted file mode 100644
+index 4442264..0000000
+--- a/modules/rh_file/rh_file.module
++++ /dev/null
+@@ -1,138 +0,0 @@
+-<?php
+-
+-/**
+- * @file
+- * Main module file for Rabbit Hole files module.
+- *
+- * This module will add the Rabbit Hole functionality to files.
+- */
+-
+-/**
+- * Implements hook_rabbit_hole().
+- */
+-function rh_file_rabbit_hole() {
+-  return array(
+-    'rh_file' => array(
+-      'entity type' => 'file',
+-      'base table' => 'file_managed',
+-      'view path' => 'file/%',
+-    ),
+-  );
+-}
+-
+-/**
+- * Implements hook_form_FORM_ID_alter().
+- *
+- * This will add Rabbit Hole options to the file type form. These settings will
+- * be used as default for every file of this file type.
+- */
+-function rh_file_form_file_entity_file_type_form_alter(&$form, $form_state) {
+-  // Add the Rabbit Hole form.
+-  rabbit_hole_form($form, 'file', $form['#file_type']->type, 'rh_file');
+-}
+-
+-/**
+- * Submit callback for the bundle form.
+- *
+- * This will set the values of the variables.
+- */
+-function rh_file_bundle_form_submit($form, $form_state) {
+-  $values = $form_state['values'];
+-
+-  // Set the values of the variables.
+-  variable_set('rh_file_override_' . $values['type'], $values['rh_file_override']);
+-  variable_set('rh_file_action_' . $values['type'], $values['rh_file_action']);
+-  variable_set('rh_file_redirect_' . $values['type'], $values['rh_file_redirect']);
+-  variable_set('rh_file_redirect_response_' . $values['type'], $values['rh_file_redirect_response']);
+-}
+-
+-/**
+- * Implements hook_form_FORM_ID_alter().
+- *
+- * This will add Rabbit Hole options to the file form when adding a new file.
+- * The user will be able to override the default Rabbit Hole options.
+- */
+-function rh_file_form_file_entity_add_upload_alter(&$form, $form_state) {
+-  if (!isset($form['#entity'])) {
+-    // Don't add the form if the file hasn't been uploaded yet.
+-    return;
+-  }
+-
+-  // Add the Rabbit Hole form.
+-  rabbit_hole_form($form, 'file', $form['#entity']->type, 'rh_file', $form['#entity']);
+-}
+-
+-/**
+- * Implements hook_form_FORM_ID_alter().
+- *
+- * This will add Rabbit Hole options to the file form when editing a file. The
+- * user will be able to override the default Rabbit Hole options.
+- */
+-function rh_file_form_file_entity_edit_alter(&$form, $form_state) {
+-  // Add the Rabbit Hole form, and add an extra javascript file that's needed
+-  // for the fieldset summary.
+-  rabbit_hole_form($form, 'file', $form_state['file']->type, 'rh_file', $form_state['file']);
+-  if (isset($form['rabbit_hole'])) {
+-    $form['rabbit_hole']['#attached']['js'][] = drupal_get_path('module', 'rh_file') . '/rh-file.js';
+-  }
+-
+-  // Add a custom submit function. This is used to disable the redirect to
+-  // file/123 if Rabbit Hole is enabled and the user doesn't have the bypass
+-  // rh_file permission.
+-  if (!user_access('bypass rh_file')) {
+-    $form['actions']['submit']['#submit'][] = 'rh_file_entity_edit_submit';
+-  }
+-}
+-
+-/**
+- * Custom submit function for the file entity edit form.
+- *
+- * This will fire after the regular submit function, and it's purpose is to make
+- * sure that the user doesn't get redirected to file/123 after saving the file,
+- * if any Rabbit Hole action is enabled. This works by redirecting the user to
+- * file/123/edit, if a destination parameter hasn't been set.
+- *
+- * @see node_form_submit()
+- */
+-function rh_file_entity_edit_submit($form, &$form_state) {
+-  // Get the action. Either the one specified for this file, or the default
+-  // value for the file type.
+-  $action = isset($form_state['values']['rh_action']) && $form_state['values']['rh_action'] != RABBIT_HOLE_USE_DEFAULT ? $form_state['values']['rh_action'] : rabbit_hole_get_action_bundle('file', $form['#entity']->type);
+-
+-  // If the action says anything else than to display the content, make sure
+-  // that the user doesn't land on the file view page. We'll check if a custom
+-  // redirect path has been set, otherwise, we'll redirect the user to the edit
+-  // page again.
+-  if ($action != RABBIT_HOLE_DISPLAY_CONTENT && $form_state['redirect'] == 'file/' . $form_state['values']['fid']) {
+-    $form_state['redirect'] = 'file/' . $form_state['values']['fid'] . '/edit';
+-  }
+-}
+-
+-/**
+- * Implements hook_file_view().
+- */
+-function rh_file_file_view($file, $view_mode, $langcode) {
+-  if ($view_mode != 'full') {
+-    // The file isn't viewed using the full view mode, exit early.
+-    return;
+-  }
+-
+-  // Determine whether or not the file is being viewed at it's own page. The
+-  // logics for this has been taken from node_is_page().
+-  $page_file = menu_get_object('file');
+-  $file_is_page = (!empty($page_file) ? $page_file->fid == $file->fid : FALSE);
+-
+-  // Execute Rabbit Hole, if the file is being viewed at its own page, and the
+-  // current user isn't able to override Rabbit Hole.
+-  if ($file_is_page && !user_access('bypass rh_file')) {
+-    rabbit_hole_execute('file', $file);
+-  }
+-}
+-
+-/**
+- * Implements hook_file_type_delete().
+- */
+-function rh_file_file_type_delete($file) {
+-  // Delete variables connected to this file type.
+-  rabbit_hole_delete_variables('file', $file->type);
+-}
+diff --git a/modules/rh_node/rh-node.js b/modules/rh_node/rh-node.js
+index 36dceea..c9448e7 100644
+--- a/modules/rh_node/rh-node.js
++++ b/modules/rh_node/rh-node.js
+@@ -1,18 +1,22 @@
++/**
++ * @file
++ */
++
+ (function($) {
+ 
+-Drupal.behaviors.rhNode = {
+-  attach: function (context, settings) {
++  Drupal.behaviors.rhNode = {
++    attach: function (context, settings) {
+ 
+-    // Set the summary for the settings form.
+-    $('fieldset.rabbit-hole-settings-form').drupalSetSummary(function() {
+-      var $rabbitHoleAction = $('.rabbit-hole-action-setting input:checked');
++      // Set the summary for the settings form.
++      $('fieldset.rabbit-hole-settings-form').drupalSetSummary(function() {
++        var $rabbitHoleAction = $('.rabbit-hole-action-setting input:checked');
+ 
+-      // Get the label of the selected action.
+-      var summary = $('label[for=' + $rabbitHoleAction.attr('id') + ']').text();
+-      return Drupal.checkPlain(summary);
+-    });
++        // Get the label of the selected action.
++        var summary = $('label[for=' + $rabbitHoleAction.attr('id') + ']').text();
++        return Drupal.checkPlain(summary);
++      });
+ 
++    }
+   }
+-}
+ 
+ })(jQuery);
+diff --git a/modules/rh_node/rh_node.info b/modules/rh_node/rh_node.info
+deleted file mode 100644
+index ce01209..0000000
+--- a/modules/rh_node/rh_node.info
++++ /dev/null
+@@ -1,5 +0,0 @@
+-name = Rabbit Hole nodes
+-description = Adds Rabbit Hole functionality for nodes.
+-core = 7.x
+-dependencies[] = rabbit_hole
+-dependencies[] = node
+diff --git a/modules/rh_node/rh_node.info.yml b/modules/rh_node/rh_node.info.yml
+new file mode 100644
+index 0000000..99b0fe2
+--- /dev/null
++++ b/modules/rh_node/rh_node.info.yml
+@@ -0,0 +1,7 @@
++name: Rabbit Hole nodes
++type: module
++description: Adds Rabbit Hole functionality for nodes.
++core: 8.x
++dependencies:
++  - rabbit_hole
++  - node
+diff --git a/modules/rh_node/rh_node.libraries.yml b/modules/rh_node/rh_node.libraries.yml
+new file mode 100644
+index 0000000..d913efe
+--- /dev/null
++++ b/modules/rh_node/rh_node.libraries.yml
+@@ -0,0 +1,6 @@
++node-form:
++  version: 1.x
++  js:
++    rh-node.js: {}
++  dependencies:
++    - core/jquery
+diff --git a/modules/rh_node/rh_node.module b/modules/rh_node/rh_node.module
+index 33440b3..3957d0c 100644
+--- a/modules/rh_node/rh_node.module
++++ b/modules/rh_node/rh_node.module
+@@ -1,26 +1,6 @@
+ <?php
+ 
+ /**
+- * @file
+- * Main module file for Rabbit Hole nodes module.
+- *
+- * This module will add the Rabbit Hole functionality to nodes.
+- */
+-
+-/**
+- * Implements hook_rabbit_hole().
+- */
+-function rh_node_rabbit_hole() {
+-  return array(
+-    'rh_node' => array(
+-      'entity type' => 'node',
+-      'base table' => 'node',
+-      'view path' => 'node/%/view',
+-    ),
+-  );
+-}
+-
+-/**
+  * Implements hook_form_FORM_ID_alter().
+  *
+  * This will add Rabbit Hole options to the node type form. These settings will
+@@ -29,10 +9,7 @@ function rh_node_rabbit_hole() {
+ function rh_node_form_node_type_form_alter(&$form, $form_state) {
+   // Add the Rabbit Hole form, and add an extra javascript file that's needed
+   // for the fieldset summary.
+-  rabbit_hole_form($form, 'node', $form['#node_type']->type, 'rh_node');
+-  if (isset($form['rabbit_hole'])) {
+-    $form['rabbit_hole']['#attached']['js'][] = drupal_get_path('module', 'rh_node') . '/rh-node.js';
+-  }
++  $form['#attached']['library'][] = 'rh_node/node-form';
+ }
+ 
+ /**
+@@ -44,75 +21,14 @@ function rh_node_form_node_type_form_alter(&$form, $form_state) {
+ function rh_node_form_node_form_alter(&$form, $form_state) {
+   // Add the Rabbit Hole form, and add an extra javascript file that's needed
+   // for the fieldset summary.
+-  rabbit_hole_form($form, 'node', $form['#node']->type, 'rh_node', $form['#node']);
+-  if (isset($form['rabbit_hole'])) {
+-    $form['rabbit_hole']['#attached']['js'][] = drupal_get_path('module', 'rh_node') . '/rh-node.js';
+-  }
+-
+   // Add a custom submit function. This is used to disable the redirect to
+   // node/123 if Rabbit Hole is enabled and the user doesn't have the bypass
+   // rh_node permission.
+-  if (!user_access('bypass rh_node')) {
+-    $form['actions']['submit']['#submit'][] = 'rh_node_node_form_submit';
+-  }
+-}
+-
+-/**
+- * Custom submit function for the node form.
+- *
+- * This will fire after the regular submit function, and it's purpose is to make
+- * sure that the user doesn't get redirected to node/123 after saving the node,
+- * if any Rabbit Hole action is enabled. This works by redirecting the user to
+- * node/123/edit, if a destination parameter hasn't been set.
+- *
+- * @see node_form_submit()
+- */
+-function rh_node_node_form_submit($form, &$form_state) {
+-  // Get the action. Either the one specified for this node, or the default
+-  // value for the content type.
+-  $action = isset($form_state['values']['rh_action']) && $form_state['values']['rh_action'] != RABBIT_HOLE_USE_DEFAULT ? $form_state['values']['rh_action'] : rabbit_hole_get_action_bundle('node', $form['#node']->type);
+-
+-  // If the action says anything else than to display the content, make sure
+-  // that the user doesn't land on the node view page. We'll check if a custom
+-  // redirect path has been set, otherwise, we'll redirect the user to the edit
+-  // page again.
+-  if ($action != RABBIT_HOLE_DISPLAY_CONTENT && $form_state['redirect'] == 'node/' . $form_state['values']['nid']) {
+-    $form_state['redirect'] = 'node/' . $form_state['values']['nid'] . '/edit';
+-  }
+-}
+-
+-/**
+- * Implements hook_node_view().
+- */
+-function rh_node_node_view($node, $view_mode, $langcode) {
+-  // Execute Rabbit Hole, if the node is being viewed at its own page using the
+-  // full view mode, and the current user isn't able to override Rabbit Hole.
+-  if ($view_mode == 'full' && node_is_page($node) && !user_access('bypass rh_node')) {
+-    rabbit_hole_execute('node', $node);
+-  }
+ }
+ 
+-/**
+- * Implements hook_ctools_render_alter().
+- *
+- * This is done since hook_node_view never gets called if the node is rendered
+- * by Ctools.
+- */
+-function rh_node_ctools_render_alter($info, $page, $context) {
+-  if ($page) {
+-    if (isset($context['handler']) && !empty($context['handler']->conf['context']) && $context['handler']->task === 'node_view') {
+-      $node = $context['contexts'][$context['handler']->conf['context']]->data;
+-      if (!user_access('bypass rh_node')) {
+-        rabbit_hole_execute('node', $node);
+-      }
+-    }
++function rh_node_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterface $entity_type) {
++  if ($entity_type->id() == 'node') {
++    return \Drupal::service('rabbit_hole.entity_extender')
++      ->getRabbitHoleFields('node');
+   }
+ }
+-
+-/**
+- * Implements hook_node_type_delete().
+- */
+-function rh_node_node_type_delete($type) {
+-  // Delete variables connected to this content type.
+-  rabbit_hole_delete_variables('node', $type->type);
+-}
+diff --git a/modules/rh_node/src/Plugin/RabbitHoleEntityPlugin/Node.php b/modules/rh_node/src/Plugin/RabbitHoleEntityPlugin/Node.php
+new file mode 100644
+index 0000000..e65edb8
+--- /dev/null
++++ b/modules/rh_node/src/Plugin/RabbitHoleEntityPlugin/Node.php
+@@ -0,0 +1,33 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rh_node\Plugin\RabbitHoleEntityPlugin\Node.
++ */
++
++namespace Drupal\rh_node\Plugin\RabbitHoleEntityPlugin;
++
++use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginBase;
++
++/**
++ * Implements rabbit hole behavior for nodes.
++ *
++ * @RabbitHoleEntityPlugin(
++ *  id = "rh_node",
++ *  label = @Translation("Node"),
++ *  entityType = "node"
++ * )
++ */
++class Node extends RabbitHoleEntityPluginBase {
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getFormSubmitHandlerAttachLocations() {
++    return array(
++      array('actions', 'submit', '#submit'),
++      array('actions', 'publish', '#submit'),
++    );
++  }
++
++}
+diff --git a/modules/rh_node/src/Tests/BehaviorSettingsFormAlterationsTest.php b/modules/rh_node/src/Tests/BehaviorSettingsFormAlterationsTest.php
+new file mode 100644
+index 0000000..42e86e4
+--- /dev/null
++++ b/modules/rh_node/src/Tests/BehaviorSettingsFormAlterationsTest.php
+@@ -0,0 +1,297 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rh_node\Tests\RabbitHoleBehaviorSettingsFormAlterationsTest.
++ */
++
++namespace Drupal\rh_node\Tests;
++
++use Drupal\simpletest\WebTestBase;
++use Drupal\node\Entity\NodeType;
++use Drupal\node\Entity\Node;
++use Drupal\rabbit_hole\Entity\BehaviorSettings;
++
++/**
++ * Test the functionality of the rabbit hole form additions to the node form.
++ *
++ * @group rh_node
++ */
++class BehaviorSettingsFormAlterationsTest extends WebTestBase {
++  const TEST_CONTENT_TYPE_ID = 'rh_node_test_content_type';
++  const CONTENT_TYPE_PATH_PREFIX = 'admin/structure/types/manage/';
++  const CONTENT_ADD_PREFIX = 'node/add/';
++  const TEST_NODE_NAME = 'rh_node_test_node';
++  const DEFAULT_BUNDLE_ACTION = 'display_page';
++  const DEFAULT_ACTION = 'bundle_default';
++
++  /**
++   * Modules to enable.
++   *
++   * @var array
++   */
++  public static $modules = array('rabbit_hole', 'rh_node', 'node');
++
++  private $user;
++
++  private $behaviorSettingsManager;
++
++  /**
++   * {@inheritdoc}
++   */
++  protected function setUp() {
++    parent::setUp();
++    // TODO: These tests should be expanded for users with different types of
++    // permissions.
++    $this->user = $this->drupalCreateUser(array(
++      'bypass node access', 'administer content types',
++      'rabbit hole administer node'
++    ));
++
++    $this->behaviorSettingsManager = $this->container
++      ->get('rabbit_hole.behavior_settings_manager');
++  }
++
++  /**
++   * Test that bundle form of new content type contains rabbit hole settings.
++   *
++   * Test that the content type form of a newly created content type contains
++   * the expected fields.
++   */
++  public function testDefaultContentTypeForm() {
++    $this->createTestContentType();
++    $this->loadContentTypeFormForTestType();
++
++    $this->assertFieldByName('rh_override', BehaviorSettings::OVERRIDE_ALLOW);
++    $this->assertFieldByName('rh_action', 'access_denied');
++    $this->assertFieldByName('rh_action', 'display_page');
++    $this->assertFieldByName('rh_action', 'page_not_found');
++    $this->assertFieldByName('rh_action', 'page_redirect');
++    $default_option_id = 'edit-rh-action-'
++      . str_replace('_', '-', self::DEFAULT_BUNDLE_ACTION);
++    $this->assertFieldChecked($default_option_id);
++  }
++
++  /**
++   * Test that saving bundle changes creates a settings config key for bundle.
++   *
++   * Test that saving changes to a content type form creates an appropriate
++   * behavior settings config key.
++   */
++  public function testContentTypeFormFirstSave() {
++    $test_content_type_id = $this->createTestContentType();
++    $this->loadContentTypeFormForTestType();
++
++    $override = BehaviorSettings::OVERRIDE_DISALLOW;
++    $action = 'access_denied';
++
++    $this->drupalPostForm(NULL, array(
++      'rh_override' => $override,
++      'rh_action' => $action,
++    ), t('Save content type'));
++
++    $saved_config = $this->behaviorSettingsManager->loadBehaviorSettingsAsConfig(
++      'node_type', $test_content_type_id, TRUE);
++    $this->assertEqual($saved_config->get('action'), $action);
++    $this->assertEqual($saved_config->get('allow_override'), $override);
++  }
++
++  /**
++   * Test that bundle form with a configured bundle behaviour loads config.
++   *
++   * Test that a content type form of a content type with a configured behavior
++   * properly loads configuration.
++   */
++  public function testContentTypeFormExistingBehavior() {
++    $action = 'page_not_found';
++    $override = BehaviorSettings::OVERRIDE_DISALLOW;
++
++    $test_content_type_id = $this->createTestContentType();
++    $this->behaviorSettingsManager->saveBehaviorSettings(array(
++      'action' => $action,
++      'allow_override' => $override,
++      'redirect_code' => BehaviorSettings::REDIRECT_NOT_APPLICABLE,
++    ), 'node_type', $test_content_type_id
++    );
++
++    $this->loadContentTypeFormForTestType();
++
++    $this->assertFieldByName('rh_override', $override);
++    $default_option_id = 'edit-rh-action-'
++      . str_replace('_', '-', $action);
++    $this->assertFieldChecked($default_option_id);
++  }
++
++  /**
++   * Test new changes to bundle with existing rabbit hole settings changes key.
++   *
++   * Test that saving changes to a content type form which already has
++   * configured rabbit hole behavior settings changes the existing key.
++   */
++  public function testContentTypeFormSave() {
++    $test_content_type_id = $this->createTestContentType();
++
++    $this->behaviorSettingsManager->saveBehaviorSettings(array(
++      'action' => 'access_denied',
++      'allow_override' => BehaviorSettings::OVERRIDE_DISALLOW,
++      'redirect_code' => BehaviorSettings::REDIRECT_NOT_APPLICABLE,
++    ), 'node_type', $test_content_type_id
++    );
++
++    $this->loadContentTypeFormForTestType();
++
++    $action = 'page_not_found';
++    $override = BehaviorSettings::OVERRIDE_ALLOW;
++
++    $this->drupalPostForm(NULL, array(
++      'rh_override' => $override,
++      'rh_action' => $action,
++    ), t('Save content type'));
++
++    $saved_config = $this->behaviorSettingsManager->loadBehaviorSettingsAsConfig(
++      'node_type', $test_content_type_id, TRUE);
++
++    $this->assertEqual($saved_config->get('action'), $action);
++    $this->assertEqual($saved_config->get('allow_override'), $override);
++  }
++
++  /**
++   * Test that we can save settings for node that did not previously have them.
++   *
++   * Test that an existing node that previously didn't have settings will have
++   * settings saved when the node form is saved.
++   */
++  public function testExistingNodeNoConfigSave() {
++    $this->createTestContentType();
++    $node_id = $this->createTestNode();
++
++    $action = 'access_denied';
++
++    $this->loadNodeFormForTestNode($node_id);
++    $this->drupalPostForm(NULL, array(
++      'rh_action' => $action,
++    ), t('Save'));
++
++    $node = Node::Load($node_id);
++    $this->assertEqual($node->rh_action->value, $action);
++  }
++
++  /**
++   * Test that an existing node entity is edited on saving the node form.
++   */
++  public function testExistingNodeSave() {
++    $this->createTestContentType();
++    $node_id = $this->createTestNode('display_page');
++
++    $action = 'access_denied';
++
++    $this->loadNodeFormForTestNode($node_id);
++    $this->drupalPostForm(NULL, array(
++      'rh_action' => $action,
++    ), t('Save'));
++
++    $node = Node::Load($node_id);
++    $this->assertEqual($node->rh_action->value, $action);
++  }
++
++  /**
++   * Test that when a node form is loaded it defaults the bundle configuration.
++   */
++  public function testDefaultNodeSettingsLoad() {
++    $this->createTestContentType();
++    $this->loadNewNodeFormForTestContentType();
++
++    $this->assertNoFieldByName('rh_override');
++    $this->assertFieldByName('rh_action', 'access_denied');
++    $this->assertFieldByName('rh_action', 'display_page');
++    $this->assertFieldByName('rh_action', 'page_not_found');
++    $this->assertFieldByName('rh_action', 'page_redirect');
++    $default_option_id = 'edit-rh-action-'
++      . str_replace('_', '-', self::DEFAULT_ACTION);
++    $this->assertFieldChecked($default_option_id);
++  }
++
++  /**
++   * Test that a node form correctly loads previously saved behavior settings.
++   */
++  public function testExistingNodeSettingsLoad() {
++    $this->createTestContentType();
++
++    $action = 'access_denied';
++    $node_id = $this->createTestNode($action);
++    $this->loadNodeFormForTestNode($node_id);
++    $default_option_id = 'edit-rh-action-'
++      . str_replace('_', '-', $action);
++    $this->assertFieldChecked($default_option_id);
++  }
++
++  /**
++   * Create a content type for testing.
++   *
++   * @return string
++   *   The content type ID.
++   */
++  private function createTestContentType() {
++    $node_type = NodeType::create(
++      array(
++        'type' => self::TEST_CONTENT_TYPE_ID,
++        'name' => self::TEST_CONTENT_TYPE_ID,
++      )
++    );
++    $node_type->save();
++    return $node_type->id();
++  }
++
++  /**
++   * Create a node for testing.
++   *
++   * @return int
++   *   The node ID.
++   */
++  private function createTestNode($action = '') {
++    $node = Node::create(
++      array(
++        'nid' => NULL,
++        'type' => self::TEST_CONTENT_TYPE_ID,
++        'title' => 'Test Behavior Settings Node',
++      )
++    );
++    if (isset($action)) {
++      $node->set('rh_action', $action);
++    }
++    $node->save();
++    return $node->id();
++  }
++
++  /**
++   * Load the test content type form.
++   */
++  private function loadContentTypeFormForTestType() {
++    $this->drupalLogin($this->user);
++    $this->drupalGet(self::CONTENT_TYPE_PATH_PREFIX
++      . self::TEST_CONTENT_TYPE_ID);
++    $this->assertResponse(200);
++  }
++
++  /**
++   * Load the add new node form for the test content type.
++   */
++  private function loadNewNodeFormForTestContentType() {
++    $this->drupalLogin($this->user);
++    $this->drupalGet(self::CONTENT_ADD_PREFIX
++      . self::TEST_CONTENT_TYPE_ID);
++    $this->assertResponse(200);
++  }
++
++  /**
++   * Load the node form for the test node with the given ID.
++   *
++   * @param string $test_node_id
++   *   The ID of the test node.
++   */
++  private function loadNodeFormForTestNode($test_node_id) {
++    $this->drupalLogin($this->user);
++    $this->drupalGet('node/' . $test_node_id . '/edit');
++    $this->assertResponse(200);
++  }
++
++}
+diff --git a/modules/rh_node/src/Tests/InvocationTest.php b/modules/rh_node/src/Tests/InvocationTest.php
+new file mode 100644
+index 0000000..2b6d271
+--- /dev/null
++++ b/modules/rh_node/src/Tests/InvocationTest.php
+@@ -0,0 +1,177 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rh_node\Tests\InvocationTest.
++ */
++
++namespace Drupal\rh_node\Tests;
++
++use Drupal\simpletest\WebTestBase;
++use Drupal\node\Entity\NodeType;
++use Drupal\node\Entity\Node;
++
++/**
++ * Test that rabbit hole behaviors are invoked correctly for nodes.
++ *
++ * @group rh_node
++ */
++class InvocationTest extends WebTestBase {
++  const TEST_CONTENT_TYPE_ID = 'rh_node_test_content_type';
++  const NODE_BASE_PATH = '/node/';
++
++  /**
++   * Modules to enable.
++   *
++   * @var array
++   */
++  public static $modules = array('rabbit_hole', 'rh_node', 'node');
++
++  private $user;
++
++  private $behaviorSettingsManager;
++
++  /**
++   * {@inheritdoc}
++   */
++  protected function setUp() {
++    parent::setUp();
++    $this->behaviorSettingsManager = $this->container
++      ->get('rabbit_hole.behavior_settings_manager');
++  }
++
++  /**
++   * Test that a fresh node with a fresh content type takes the default action.
++   */
++  public function testNodeDefaults() {
++    $type = $this->createTestNodeType();
++    $node = $this->createTestNodeOfType($type->id());
++    $this->drupalGet(self::NODE_BASE_PATH . $node->id());
++    $this->assertResponse(200);
++  }
++
++  /**
++   * Test action not set or set to bundle_default will default to bundle action.
++   */
++  public function testDefaultToBundle() {
++    $type = $this->createTestNodeType('access_denied');
++    $node = $this->createTestNodeOfType($type->id());
++    $this->drupalGet(self::NODE_BASE_PATH . $node->id());
++    $this->assertResponse(403);
++
++    $node2 = $this->createTestNodeOfType($type->id(), 'bundle_default');
++    $this->drupalGet(self::NODE_BASE_PATH . $node2->id());
++    $this->assertResponse(403);
++  }
++
++  /**
++   * Test that a node set to access_denied returns a 403 response.
++   */
++  public function testAccessDenied() {
++    $type = $this->createTestNodeType();
++    $node = $this->createTestNodeOfType($type->id(), 'access_denied');
++    $this->drupalGet(self::NODE_BASE_PATH . $node->id());
++    $this->assertResponse(403);
++  }
++
++  /**
++   * Test that a node set to display_page returns a 200 response.
++   */
++  public function testDisplayPage() {
++    $type = $this->createTestNodeType('access_denied');
++    $node = $this->createTestNodeOfType($type->id(), 'display_page');
++    $this->drupalGet(self::NODE_BASE_PATH . $node->id());
++    $this->assertResponse(200);
++  }
++
++  /**
++   * TODO.
++   */
++  public function testUrlRedirects() {
++    $type = $this->createTestNodeType('access_denied');
++
++    $this->testUrlRedirect(301, $type);
++    $this->testUrlRedirect(302, $type);
++    $this->testUrlRedirect(303, $type);
++    // $this->testUrlRedirect(304, $type);.
++    $this->testUrlRedirect(305, $type);
++    $this->testUrlRedirect(307, $type);
++  }
++
++  /**
++   * Test URL redirects with tokens.
++   *
++   * @todo
++   */
++  public function testTokenizedUrlRedirect() {}
++
++  /**
++   * Test redirects that use PHP code.
++   *
++   * @todo
++   */
++  public function testCodeRedirect() {}
++
++  /**
++   * Test that a node set to page_not_found overrides returns a 404.
++   */
++  public function testPageNotFound() {
++    $type = $this->createTestNodeType();
++    $node = $this->createTestNodeOfType($type->id(), 'page_not_found');
++    $this->drupalGet(self::NODE_BASE_PATH . $node->id());
++    $this->assertResponse(404);
++  }
++
++  /**
++   * TODO.
++   */
++  private function createTestNodeType($action = NULL) {
++    $node_type = NodeType::create(
++      array(
++        'type' => self::TEST_CONTENT_TYPE_ID,
++        'name' => self::TEST_CONTENT_TYPE_ID,
++      )
++    );
++    $node_type->save();
++    if (isset($action)) {
++      $this->behaviorSettingsManager->saveBehaviorSettings(
++        array('action' => $action), 'node_type', $node_type->id());
++    }
++    return $node_type;
++  }
++
++  /**
++   * TODO.
++   */
++  private function createTestNodeOfType($node_type_id = self::TEST_CONTENT_TYPE_ID, $action = NULL) {
++    $node = Node::create(
++      array(
++        'nid' => NULL,
++        'type' => $node_type_id,
++        'title' => 'Test Behavior Settings Node',
++      )
++    );
++    if (isset($action)) {
++      $node->set('rh_action', $action);
++    }
++    $node->save();
++    return $node;
++  }
++
++  /**
++   * Test some simple URL redirects.
++   */
++  private function testUrlRedirect($redirect_code, $type) {
++    global $base_root;
++
++    $target_node = $this->createTestNodeOfType($type->id(), 'display_page');
++    $destination_path = self::NODE_BASE_PATH . $target_node->id();
++
++    $node = $this->createTestNodeOfType($type->id(), 'page_redirect');
++    $node->set('rh_redirect', $base_root . $destination_path);
++    $node->set('rh_redirect_response', $redirect_code);
++    $node->save();
++    $this->drupalGet(self::NODE_BASE_PATH . $node->id());
++    $this->assertUrl($base_root . $destination_path);
++  }
++
++}
+diff --git a/modules/rh_taxonomy/rh_taxonomy.info b/modules/rh_taxonomy/rh_taxonomy.info
+deleted file mode 100644
+index e0af395..0000000
+--- a/modules/rh_taxonomy/rh_taxonomy.info
++++ /dev/null
+@@ -1,5 +0,0 @@
+-name = Rabbit Hole taxonomy terms
+-description = Adds Rabbit Hole functionality for taxonomy terms.
+-core = 7.x
+-dependencies[] = rabbit_hole
+-dependencies[] = taxonomy
+diff --git a/modules/rh_taxonomy/rh_taxonomy.install b/modules/rh_taxonomy/rh_taxonomy.install
+deleted file mode 100644
+index 566624a..0000000
+--- a/modules/rh_taxonomy/rh_taxonomy.install
++++ /dev/null
+@@ -1,13 +0,0 @@
+-<?php
+-
+-/**
+- * @file
+- * Update instructions for Rabbit Hole taxonomy terms.
+- */
+-
+-/**
+- * Change the weight of Rabbit Hole taxonomy terms to 999.
+- */
+-function rh_taxonomy_update_7001() {
+-  db_query("UPDATE {system} SET weight = 999 WHERE name = 'rh_taxonomy'");
+-}
+diff --git a/modules/rh_taxonomy/rh_taxonomy.module b/modules/rh_taxonomy/rh_taxonomy.module
+deleted file mode 100644
+index 3bab1d0..0000000
+--- a/modules/rh_taxonomy/rh_taxonomy.module
++++ /dev/null
+@@ -1,97 +0,0 @@
+-<?php
+-
+-/**
+- * @file
+- * Main module file for Rabbit Hole taxonomy terms module.
+- *
+- * This module will add the Rabbit Hole functionality to taxonomy terms.
+- */
+-
+-/**
+- * Implements hook_rabbit_hole().
+- */
+-function rh_taxonomy_rabbit_hole() {
+-  return array(
+-    'rh_taxonomy' => array(
+-      'entity type' => 'taxonomy_term',
+-      'base table' => 'taxonomy_term_data',
+-      'view path' => 'taxonomy/term/%/view',
+-    ),
+-  );
+-}
+-
+-/**
+- * Implements hook_form_FORM_ID_alter().
+- *
+- * This will add Rabbit Hole options to the vocabulary form. These settings will
+- * be used as default for every term of this vocabulary.
+- */
+-function rh_taxonomy_form_taxonomy_form_vocabulary_alter(&$form, $form_state) {
+-  if (isset($form_state['confirm_delete'])) {
+-    // We're on the delete confirmation form.
+-    return;
+-  }
+-
+-  // Add the Rabbit Hole form.
+-  rabbit_hole_form($form, 'taxonomy_term', $form['#vocabulary']->machine_name, 'rh_taxonomy');
+-}
+-
+-/**
+- * Submit callback for the bundle form.
+- *
+- * This will set the value of the variables, and update the name of the
+- * variables if the machine name of the vocabulary has changed.
+- */
+-function rh_taxonomy_bundle_form_submit($form, $form_state) {
+-  $values = $form_state['values'];
+-
+-  // Set the values of the variables. This will be set to the provided values,
+-  // if there are any provided values. They may be NULL if the user doesn't have
+-  // the administer rh_taxonomy permission. In this case, we'll set the
+-  // variables according to the stored values for the old machine name. We'll
+-  // use the old machine name in case it has changed.
+-  variable_set('rh_taxonomy_term_override_' . $values['machine_name'], isset($values['rh_taxonomy_term_override']) ? $values['rh_taxonomy_term_override'] : variable_get('rh_taxonomy_term_override_' . $values['old_machine_name']));
+-  variable_set('rh_taxonomy_term_action_' . $values['machine_name'], isset($values['rh_taxonomy_term_action']) ? $values['rh_taxonomy_term_action'] : variable_get('rh_taxonomy_term_action_' . $values['old_machine_name']));
+-  variable_set('rh_taxonomy_term_redirect_' . $values['machine_name'], isset($values['rh_taxonomy_term_redirect']) ? $values['rh_taxonomy_term_redirect'] : variable_get('rh_taxonomy_term_redirect_' . $values['old_machine_name']));
+-  variable_set('rh_taxonomy_term_redirect_response_' . $values['machine_name'], isset($values['rh_taxonomy_term_redirect_response']) ? $values['rh_taxonomy_term_redirect_response'] : variable_get('rh_taxonomy_term_redirect_response_' . $values['old_machine_name']));
+-
+-  // Delete old variables if the machine name has changed.
+-  if ($values['machine_name'] != $values['old_machine_name']) {
+-    rabbit_hole_delete_variables('taxonomy_term', $values['old_machine_name']);
+-  }
+-}
+-
+-/**
+- * Implements hook_form_FORM_ID_alter().
+- *
+- * This will add Rabbit Hole options to the taxonomy term form. The user will
+- * be able to override the default Rabbit Hole options.
+- */
+-function rh_taxonomy_form_taxonomy_form_term_alter(&$form, $form_state) {
+-  if (isset($form_state['confirm_delete'])) {
+-    // We're on the delete confirmation form.
+-    return;
+-  }
+-
+-  // Add the Rabbit Hole form.
+-  rabbit_hole_form($form, 'taxonomy_term', $form['#bundle'], 'rh_taxonomy', (object) $form['#term']);
+-}
+-
+-/**
+- * Implements hook_taxonomy_term_view().
+- */
+-function rh_taxonomy_taxonomy_term_view($term, $view_mode, $langcode) {
+-  // Execute Rabbit Hole, if the term is being viewed at its own page using the
+-  // full view mode, and the current user isn't able to override Rabbit Hole.
+-  if ($view_mode == 'full' && taxonomy_term_is_page($term) && !user_access('bypass rh_taxonomy')) {
+-    rabbit_hole_execute('taxonomy_term', $term);
+-  }
+-}
+-
+-/**
+- * Implements hook_taxonomy_vocabulary_delete().
+- */
+-function rh_taxonomy_taxonomy_vocabulary_delete($vocabulary) {
+-  // Delete variables connected to this vocabulary.
+-  rabbit_hole_delete_variables('taxonomy_term', $vocabulary->machine_name);
+-}
+diff --git a/modules/rh_user/rh_user.info b/modules/rh_user/rh_user.info
+deleted file mode 100644
+index d6a8cf8..0000000
+--- a/modules/rh_user/rh_user.info
++++ /dev/null
+@@ -1,5 +0,0 @@
+-name = Rabbit Hole users
+-description = Adds Rabbit Hole functionality for users.
+-core = 7.x
+-dependencies[] = rabbit_hole
+-dependencies[] = user
+diff --git a/modules/rh_user/rh_user.info.yml b/modules/rh_user/rh_user.info.yml
+new file mode 100644
+index 0000000..d57928c
+--- /dev/null
++++ b/modules/rh_user/rh_user.info.yml
+@@ -0,0 +1,7 @@
++name: Rabbit Hole users
++type: module
++description: Adds Rabbit Hole functionality for users.
++core: 8.x
++dependencies:
++  - rabbit_hole
++  - user
+diff --git a/modules/rh_user/rh_user.module b/modules/rh_user/rh_user.module
+index cbfb247..dd7a077 100644
+--- a/modules/rh_user/rh_user.module
++++ b/modules/rh_user/rh_user.module
+@@ -1,92 +1,8 @@
+ <?php
+ 
+-/**
+- * @file
+- * Main module file for Rabbit Hole users module.
+- *
+- * This module will add the Rabbit Hole functionality to users.
+- */
+-
+-/**
+- * Implements hook_rabbit_hole().
+- */
+-function rh_user_rabbit_hole() {
+-  return array(
+-    'rh_user' => array(
+-      'entity type' => 'user',
+-      'base table' => 'users',
+-      'view path' => 'user/%/view',
+-    ),
+-  );
+-}
+-
+-/**
+- * Implements hook_form_FORM_ID_alter().
+- *
+- * This will add Rabbit Hole options to the account settings form. These
+- * settings will be used as default for every user.
+- */
+-function rh_user_form_user_admin_settings_alter(&$form, $form_state) {
+-  // Add the Rabbit Hole form.
+-  rabbit_hole_form($form, 'user', 'user', 'rh_user');
+-}
+-
+-/**
+- * Submit callback for the bundle form.
+- *
+- * This will set the values of the variables. Drupal will save these settings by
+- * default, but the name of those variables won't match our naming conventions,
+- * so we'll have to delete those after our variables has been saved.
+- */
+-function rh_user_bundle_form_submit($form, $form_state) {
+-  $values = $form_state['values'];
+-
+-  // Set the values of the variables.
+-  variable_set('rh_user_override_user', $values['rh_user_override']);
+-  variable_set('rh_user_action_user', $values['rh_user_action']);
+-  variable_set('rh_user_redirect_user', $values['rh_user_redirect']);
+-  variable_set('rh_user_redirect_response_user', $values['rh_user_redirect_response']);
+-
+-  // Delete the ones that are automatically saved by Drupal.
+-  variable_del('rh_user_override');
+-  variable_del('rh_user_action');
+-  variable_del('rh_user_redirect');
+-  variable_del('rh_user_redirect_response');
+-}
+-
+-/**
+- * Implements hook_form_alter().
+- */
+-function rh_user_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+-  // Add the Rabbit Hole form.
+-  rabbit_hole_form($form, 'user', 'user', 'rh_user', $form['#user']);
+-}
+-
+-/**
+- * Implements hook_form_alter().
+- */
+-function rh_user_form_user_register_form_alter(&$form, &$form_state, $form_id) {
+-  // Add the Rabbit Hole form.
+-  rabbit_hole_form($form, 'user', 'user', 'rh_user', $form['#user']);
+-}
+-
+-/**
+- * Implements hook_user_view().
+- */
+-function rh_user_user_view($account, $view_mode, $langcode) {
+-  if ($view_mode != 'full') {
+-    // The user isn't viewed using the full view mode, exit early.
+-    return;
+-  }
+-
+-  // Copy the behavior from the node_is_page() function to determine if the user
+-  // is being viewed at its own page.
+-  $page_user = menu_get_object('user');
+-  $user_is_page = (!empty($page_user) ? $page_user->uid == $account->uid : FALSE);
+-
+-  // Execute Rabbit Hole, if the user is being viewed at its own page, and the
+-  // current user isn't able to override Rabbit Hole.
+-  if ($user_is_page && !user_access('bypass rh_user')) {
+-    rabbit_hole_execute('user', $account);
++function rh_user_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterface $entity_type) {
++  if ($entity_type->id() == 'user') {
++    return \Drupal::service('rabbit_hole.entity_extender')
++      ->getRabbitHoleFields('user');
+   }
+ }
+diff --git a/modules/rh_user/src/Plugin/RabbitHoleEntityPlugin/User.php b/modules/rh_user/src/Plugin/RabbitHoleEntityPlugin/User.php
+new file mode 100644
+index 0000000..86bbf23
+--- /dev/null
++++ b/modules/rh_user/src/Plugin/RabbitHoleEntityPlugin/User.php
+@@ -0,0 +1,46 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rh_user\Plugin\RabbitHoleEntityPlugin\Node.
++ */
++
++namespace Drupal\rh_user\Plugin\RabbitHoleEntityPlugin;
++
++use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginBase;
++
++/**
++ * Implements rabbit hole behavior for nodes.
++ *
++ * @RabbitHoleEntityPlugin(
++ *  id = "rh_user",
++ *  label = @Translation("Node"),
++ *  entityType = "user"
++ * )
++ */
++class User extends RabbitHoleEntityPluginBase {
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getFormSubmitHandlerAttachLocations() {
++    return array(
++      array('actions', 'submit', '#submit'),
++    );
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getGlobalConfigFormId() {
++    return "user_admin_settings";
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getGlobalFormSubmitHandlerAttachLocations() {
++    return array(array('actions', 'submit', '#submit'));
++  }
++
++}
+diff --git a/rabbit_hole.info b/rabbit_hole.info
+deleted file mode 100644
+index 9425f4d..0000000
+--- a/rabbit_hole.info
++++ /dev/null
+@@ -1,3 +0,0 @@
+-name = Rabbit Hole
+-description = Basic functionality that is shared among the different Rabbit Hole modules.
+-core = 7.x
+diff --git a/rabbit_hole.info.yml b/rabbit_hole.info.yml
+new file mode 100644
+index 0000000..f01d594
+--- /dev/null
++++ b/rabbit_hole.info.yml
+@@ -0,0 +1,5 @@
++name: Rabbit Hole
++type: module
++description: Basic functionality that is shared among the different Rabbit Hole modules.
++core: 8.x
++package: Other
+diff --git a/rabbit_hole.install b/rabbit_hole.install
+deleted file mode 100644
+index 8a936bf..0000000
+--- a/rabbit_hole.install
++++ /dev/null
+@@ -1,117 +0,0 @@
+-<?php
+-
+-/**
+- * @file
+- * Install, update and uninstall functions for Rabbit Hole.
+- */
+-
+-/**
+- * Enable Rabbit Hole nodes, and migrate the old data to the new module.
+- *
+- * This involves changing database fields names, permissions and existing
+- * variables.
+- */
+-function rabbit_hole_update_7001() {
+-  // Change the name of the database fields.
+-  $fields['rabbit_hole_action'] = array(
+-    'name' => 'rh_action',
+-    'spec' => array(
+-      'description' => 'Specifies which action that Rabbit Hole should take.',
+-      'type' => 'int',
+-      'default' => NULL,
+-    ),
+-  );
+-  $fields['rabbit_hole_redirect'] = array(
+-    'name' => 'rh_redirect',
+-    'spec' => array(
+-      'description' => 'The path to where the user should get redirected to.',
+-      'type' => 'varchar',
+-      'default' => NULL,
+-      'length' => 255,
+-    ),
+-  );
+-  $fields['rabbit_hole_redirect_response'] = array(
+-    'name' => 'rh_redirect_response',
+-    'spec' => array(
+-      'description' => 'Specifies the HTTP response code that should be used when perform a redirect.',
+-      'type' => 'int',
+-      'default' => NULL,
+-    ),
+-  );
+-  foreach ($fields as $name => $changes) {
+-    if (db_field_exists('node', $name)) {
+-      db_change_field('node', $name, $changes['name'], $changes['spec']);
+-    }
+-  }
+-
+-  // Enable the Rabbit Hole nodes module.
+-  if (!module_exists('rh_node')) {
+-    module_enable(array('rh_node'));
+-  }
+-
+-  // Update the permissions.
+-  $administer_rabbit_hole = user_roles(FALSE, 'administer rabbit hole');
+-  foreach ($administer_rabbit_hole as $rid => $name) {
+-    user_role_change_permissions($rid, array(
+-      'administer rabbit hole' => FALSE,
+-      'administer rh_node' => TRUE,
+-    ));
+-  }
+-  $bypass_rabbit_hole = user_roles(FALSE, 'bypass rabbit hole');
+-  foreach ($bypass_rabbit_hole as $rid => $name) {
+-    user_role_change_permissions($rid, array(
+-      'bypass rabbit hole' => FALSE,
+-      'bypass rh_node' => TRUE,
+-    ));
+-  }
+-
+-  // Change the name of the variables.
+-  $node_types = array_keys(node_type_get_types());
+-  foreach ($node_types as $node_type) {
+-    $action = variable_get('rabbit_hole_action_' . $node_type, NULL);
+-    if (isset($action)) {
+-      variable_set('rh_node_action_' . $node_type, $action);
+-      variable_del('rabbit_hole_action_' . $node_type);
+-    }
+-
+-    $redirect = variable_get('rabbit_hole_redirect_' . $node_type, NULL);
+-    if (isset($redirect)) {
+-      variable_set('rh_node_redirect_' . $node_type, $redirect);
+-      variable_del('rabbit_hole_redirect_' . $node_type);
+-    }
+-
+-    $redirect_response = variable_get('rabbit_hole_redirect_response_' . $node_type, NULL);
+-    if (isset($redirect_response)) {
+-      variable_set('rh_node_redirect_response_' . $node_type, $redirect_response);
+-      variable_del('rabbit_hole_redirect_response_' . $node_type);
+-    }
+-  }
+-}
+-
+-/**
+- * Change the rh_redirect field from varchar to text.
+- */
+-function rabbit_hole_update_7002() {
+-  // Get the Rabbit Hole fields.
+-  $fields = rabbit_hole_schema_fields();
+-
+-  // Get the modules that are implementing hook_rabbit_hole(), and change the
+-  // rh_redirect field.
+-  $modules = module_invoke_all('rabbit_hole');
+-  foreach ($modules as $module => $info) {
+-    db_change_field($info['base table'], 'rh_redirect', 'rh_redirect', $fields['rh_redirect']);
+-  }
+-}
+-
+-/**
+- * Set the new override setting to TRUE for existing bundles.
+- */
+-function rabbit_hole_update_7003() {
+-  $modules = module_invoke_all('rabbit_hole');
+-  foreach ($modules as $module => $info) {
+-    $entity_info = entity_get_info($info['entity type']);
+-    foreach ($entity_info['bundles'] as $bundle => $bundle_info) {
+-      variable_set('rh_' . $info['entity type'] . '_override_' . $bundle, TRUE);
+-    }
+-  }
+-}
+diff --git a/rabbit_hole.module b/rabbit_hole.module
+index 567d6c5..efc9fa3 100644
+--- a/rabbit_hole.module
++++ b/rabbit_hole.module
+@@ -2,724 +2,84 @@
+ 
+ /**
+  * @file
+- * Main module file for Rabbit Hole.
+- *
+- * This is a module that will prevent users from viewing an entity page. This
+- * module won't handle any behavior by itself, but will add the base
+- * functionality required by other modules.
++ * Contains rabbit_hole.module..
+  */
+ 
+-define('RABBIT_HOLE_USE_DEFAULT', -1);
+-define('RABBIT_HOLE_DISPLAY_CONTENT', 0);
+-define('RABBIT_HOLE_ACCESS_DENIED', 1);
+-define('RABBIT_HOLE_PAGE_NOT_FOUND', 2);
+-define('RABBIT_HOLE_PAGE_REDIRECT', 3);
+-define('RABBIT_HOLE_PAGE_REDIRECT_DEFAULT', '');
+-define('RABBIT_HOLE_PAGE_REDIRECT_RESPONSE_DEFAULT', 301);
++use Drupal\Core\Routing\RouteMatchInterface;
+ 
+ /**
+- * Implements hook_permission().
++ * Implements hook_help().
+  */
+-function rabbit_hole_permission() {
+-  $permissions = array();
+-
+-  // Load information from any module that implements hook_rabbit_hole().
+-  $modules = module_invoke_all('rabbit_hole');
+-  foreach ($modules as $module => $info) {
+-    // Get information about the entity.
+-    $entity_info = entity_get_info($info['entity type']);
+-    $entity_label = strtolower(isset($entity_info['plural label']) ? $entity_info['plural label'] : $entity_info['label']);
+-
+-    // Add an administer permission.
+-    $permissions['administer ' . $module] = array(
+-      'title' => t('Administer Rabbit Hole settings for @entity_type', array('@entity_type' => $entity_label)),
+-    );
+-
+-    // Add an PHP evaluation permission.
+-    $permissions['php redirect ' . $module] = array(
+-      'title' => t('Allow PHP redirect evaluation for @entity_type', array('@entity_type' => $entity_label)),
+-      'restrict access' => TRUE,
+-    );
+-
+-    // Add a bypass permission.
+-    $permissions['bypass ' . $module] = array(
+-      'title' => t('Bypass Rabbit Hole action for @entity_type', array('@entity_type' => $entity_label)),
+-      'description' => t('Allows user to bypass the action that has been configured for @entity_type.', array('@entity_type' => $entity_label)),
+-      'restrict access' => TRUE,
+-    );
+-  }
+-
+-  return $permissions;
+-}
+-
+-/**
+- * Implements hook_field_extra_fields().
+- */
+-function rabbit_hole_field_extra_fields() {
+-  $extra = array();
+-
+-  // Get the modules that implements hook_rabbit_hole().
+-  $modules = module_invoke_all('rabbit_hole');
+-
+-  // Add a form field for each bundle for every entity type that is controlled
+-  // by Rabbit Hole.
+-  foreach ($modules as $module => $info) {
+-    $entity_info = entity_get_info($info['entity type']);
+-    foreach ($entity_info['bundles'] as $bundle => $bundle_info) {
+-      $extra[$info['entity type']][$bundle]['form'] = array(
+-        'rabbit_hole' => array(
+-          'label' => t('Rabbit Hole'),
+-          'description' => t('Rabbit Hole configuration'),
+-          'weight' => 0,
+-        ),
+-      );
+-    }
+-  }
+-
+-  return $extra;
+-}
+-
+-/**
+- * Form structure for the Rabbit Hole configuration.
+- *
+- * This should be used by other modules that wish to implement the Rabbit Hole
+- * configurations in any form.
+- *
+- * @param array $attach
+- *   The form that the Rabbit Hole form should be attached to.
+- * @param string $entity_type
+- *   The entity type that we're adding the form for, e.g. 'node'.
+- * @param string $bundle
+- *   The bundle that we're adding the form to, e.g. the content type for nodes.
+- *   This might be an empty string if we're creating a new bundle.
+- * @param string $module
+- *   The name of the module that invokes this function.
+- * @param object $entity
+- *   The entity that we're adding the form to, e.g. a node. This will be NULL if
+- *   the form is being attached to the bundle configuration form.
+- */
+-function rabbit_hole_form(&$attach, $entity_type, $bundle, $module, $entity = NULL) {
+-  if (!user_access('administer ' . $module)) {
+-    // The user doesn't have access, exit.
+-    return;
+-  }
+-
+-  if (isset($entity) && !rabbit_hole_get_override_bundle($entity_type, $bundle)) {
+-    // The form is about to be attached to an entity, but the bundle isn't
+-    // allowed to be overridden. Exit.
+-    return;
+-  }
+-
+-  // Get information about the entity.
+-  $entity_info = entity_get_info($entity_type);
+-  $entity_label = strtolower(isset($entity_info['plural label']) ? $entity_info['plural label'] : $entity_info['label']);
+-
+-  // Get the label for the bundle. This won't be set when the user is creating a
+-  // new bundle. In that case, fallback to "this bundle".
+-  $bundle_label = isset($entity_info['bundles'][$bundle]['label']) ? $entity_info['bundles'][$bundle]['label'] : 'this bundle';
+-
+-  // Wrap everything in a fieldset.
+-  $form['rabbit_hole'] = array(
+-    '#type' => 'fieldset',
+-    '#title' => t('Rabbit Hole settings'),
+-    '#collapsed' => FALSE,
+-    '#collapsible' => TRUE,
+-    '#group' => 'additional_settings',
+-    '#attributes' => array('class' => array('rabbit-hole-settings-form')),
+-  );
+-
+-  // Add the invoking module to the internal values.
+-  $form['rabbit_hole']['rh_module'] = array(
+-    '#type' => 'value',
+-    '#value' => $module,
+-  );
+-
+-  // Add override setting if we're editing a bundle.
+-  if (!isset($entity)) {
+-    $form['rabbit_hole']['rh_' . $entity_type . '_override'] = array(
+-      '#type' => 'checkbox',
+-      '#title' => t('Allow these settings to be overridden for individual entities'),
+-      '#default_value' => rabbit_hole_get_override_bundle($entity_type, $bundle),
+-      '#description' => t('If this is checked, users with the %permission permission will be able to override these settings for individual entities.', array('%permission' => t('Administer Rabbit Hole settings for @entity_type', array('@entity_type' => $entity_label)))),
+-    );
+-  }
+-
+-  // Build the options for the action setting.
+-  $action_options = array(
+-    RABBIT_HOLE_DISPLAY_CONTENT => t('Display the page'),
+-    RABBIT_HOLE_ACCESS_DENIED => t('Access denied'),
+-    RABBIT_HOLE_PAGE_NOT_FOUND => t('Page not found'),
+-    RABBIT_HOLE_PAGE_REDIRECT => t('Page redirect'),
+-  );
+-  if (isset($entity)) {
+-    // Add an option if we are editing an entity. This will allow us to use the
+-    // configuration for the bundle.
+-    $action_bundle = rabbit_hole_get_action_bundle($entity_type, $bundle);
+-    $action_options = array(
+-      RABBIT_HOLE_USE_DEFAULT => t('Global @bundle behavior (@setting)', array('@bundle' => strtolower($bundle_label), '@setting' => $action_options[$action_bundle])),
+-    ) + $action_options;
+-  }
+-
+-  // Add action setting.
+-  $action_setting_name = isset($entity) ? 'rh_action' : 'rh_' . $entity_type . '_action';
+-  $form['rabbit_hole'][$action_setting_name] = array(
+-    '#type' => 'radios',
+-    '#title' => t('Behavior'),
+-    '#options' => $action_options,
+-    '#default_value' => isset($entity) ? rabbit_hole_get_action_entity($entity_type, $entity) : (!empty($bundle) ? rabbit_hole_get_action_bundle($entity_type, $bundle) : RABBIT_HOLE_DISPLAY_CONTENT),
+-    '#description' => t('What should happen when someone tries to visit an entity page for @bundle?', array('@bundle' => strtolower(isset($entity_info['plural label']) ? $entity_info['plural label'] : $bundle_label))),
+-    '#attributes' => array('class' => array('rabbit-hole-action-setting')),
+-  );
+-
+-  // Wrap the redirect settings in a fieldset.
+-  $form['rabbit_hole']['redirect'] = array(
+-    '#type' => 'fieldset',
+-    '#title' => t('Redirect settings'),
+-    '#attributes' => array('class' => array('rabbit-hole-redirect-options')),
+-    '#states' => array(
+-      'visible' => array(
+-        ':input[name="' . $action_setting_name . '"]' => array('value' => '3'),
+-      ),
+-    ),
+-  );
+-
+-  // Get the default value for the redirect path.
+-  $redirect_default_value = isset($entity) ? rabbit_hole_get_redirect_entity($entity_type, $entity) : (!empty($bundle) ? rabbit_hole_get_redirect_bundle($entity_type, $bundle) : RABBIT_HOLE_PAGE_REDIRECT_DEFAULT);
+-
+-  // Build the descriptive text. Add some help text for PHP, if the user has the
+-  // permission to use PHP for evaluation.
+-  $description = array();
+-  $description[] = t('Enter the relative path or the full URL that the user should get redirected to. Query strings and fragments are supported, such as %example.', array('%example' => 'http://www.example.com/?query=value#fragment'));
+-  if (rabbit_hole_access_php($module)) {
+-    $placeholders = array(
+-      '!surround' => '<code>&lt;?php</code> and <code>?&gt;</code>',
+-      '!abort' => '<code>FALSE</code>',
+-      '!variable' => '<code>$entity</code>',
+-    );
+-    $description[] = t("You are able to evaluate PHP to determine the redirect. Surround your code by !surround. The returned string will replace the PHP part. However, you are able to return !abort if the user shouldn't get redirected. The !variable variable is available for use.", $placeholders);
+-  }
+-  $description[] = t('You may enter tokens in this field.');
+-
+-  // Add the redirect path setting.
+-  $redirect_setting_name = isset($entity) ? 'rh_redirect' : 'rh_' . $entity_type . '_redirect';
+-  $form['rabbit_hole']['redirect']['redirect_setting_name'] = array(
+-    '#type' => 'value',
+-    '#value' => $redirect_setting_name,
+-  );
+-  $form['rabbit_hole']['redirect'][$redirect_setting_name] = array(
+-    '#type' => rabbit_hole_access_php($module) ? 'textarea' : 'textfield',
+-    '#title' => t('Redirect path'),
+-    '#default_value' => $redirect_default_value,
+-    '#description' => '<p>' . implode('</p><p>', $description) . '</p>',
+-    '#attributes' => array('class' => array('rabbit-hole-redirect-setting')),
+-    '#rows' => substr_count($redirect_default_value, "\r\n") + 2,
+-  );
+-  // Display a list of tokens if the Token module is enabled.
+-  if (module_exists('token')) {
+-    $entity_info = entity_get_info($entity_type);
+-    $form['rabbit_hole']['redirect']['token_info'] = array(
+-      '#theme' => 'token_tree',
+-      '#token_types' => array($entity_info['token type']),
+-      '#dialog' => TRUE,
+-    );
+-  }
+-
+-  // Add the redirect respons setting.
+-  $redirect_response_setting_name = isset($entity) ? 'rh_redirect_response' : 'rh_' . $entity_type . '_redirect_response';
+-  $form['rabbit_hole']['redirect'][$redirect_response_setting_name] = array(
+-    '#type' => 'select',
+-    '#title' => t('Response code'),
+-    '#options' => array(
+-      301 => t('301 (Moved Permanently)'),
+-      302 => t('302 (Found)'),
+-      303 => t('303 (See other)'),
+-      304 => t('304 (Not modified)'),
+-      305 => t('305 (Use proxy)'),
+-      307 => t('307 (Temporary redirect)'),
+-    ),
+-    '#default_value' => isset($entity) ? rabbit_hole_get_redirect_response_entity($entity_type, $entity) : (!empty($bundle) ? rabbit_hole_get_redirect_response_bundle($entity_type, $bundle) : RABBIT_HOLE_PAGE_REDIRECT_RESPONSE_DEFAULT),
+-    '#description' => t('The response code that should be sent to the users browser. Follow !link for more information on response codes.', array('!link' => l(t('this link'), 'http://api.drupal.org/api/drupal/includes--common.inc/function/drupal_goto/7'))),
+-    '#attributes' => array('class' => array('rabbit-hole-redirect-response-setting')),
+-  );
+-
+-  // If the redirect path contains PHP, and the user doesn't have permission to
+-  // use PHP for evaluation, we'll disable access to the path setting, and print
+-  // some helpful information about what's going on.
+-  if (rabbit_hole_contains_php($redirect_default_value) && !rabbit_hole_access_php($module)) {
+-    $form['rabbit_hole']['redirect']['#description'] = t("You're not able to edit the redirect path since it contain's PHP, and you're not allowed to evaluate PHP for this redirect.");
+-    $form['rabbit_hole']['redirect'][$redirect_setting_name]['#access'] = FALSE;
+-    if (isset($form['rabbit_hole']['redirect']['token_info'])) {
+-      $form['rabbit_hole']['redirect']['token_info']['#access'] = FALSE;
+-    }
+-  }
+-
+-  // Attach the Rabbit Hole form to the main form, and add a custom validation
+-  // callback.
+-  $attach += $form;
+-  $attach['#validate'][] = 'rabbit_hole_form_validate';
+-
+-  // If the implementing module provides a submit function for the bundle form,
+-  // we'll add it as a submit function for the attached form. We'll also make
+-  // sure that this won't be added for entity forms.
+-  $submit_function = $module . '_bundle_form_submit';
+-  if (function_exists($submit_function) && !isset($entity)) {
+-    $attach['#submit'][] = $submit_function;
+-  }
+-}
+-
+-/**
+- * Validation callback for the Rabbit Hole form.
+- */
+-function rabbit_hole_form_validate($form, &$form_state) {
+-  // If there is PHP in the redirect path, make sure that the user has the
+-  // permission to evaluate PHP.
+-  if (rabbit_hole_contains_php($form_state['values'][$form_state['values']['redirect_setting_name']]) && !rabbit_hole_access_php($form_state['values']['rh_module'])) {
+-    form_set_error($form_state['values']['redirect_setting_name'], t("You don't have permission to evaluate PHP in the redirect path."));
+-  }
+-}
+-
+-/**
+- * Determines the action that should be executed.
+- *
+- * This will actually execute the action, and should be used when the entity
+- * is being viewed.
+- *
+- * @param string $entity_type
+- *   The entity type that's being viewed, e.g. 'node'.
+- * @param object $entity
+- *   The entity that is being viewed.
+- *
+- * @return false
+- *   This will only return FALSE, which means that nothing was done. If
+- *   something is done, this function will redirect the user immediately.
+- */
+-function rabbit_hole_execute($entity_type, $entity) {
+-  switch (rabbit_hole_get_action($entity_type, $entity)) {
+-    case RABBIT_HOLE_ACCESS_DENIED:
+-      // Deliver a 403, and exit.
+-      drupal_access_denied();
+-      drupal_exit();
+-
+-    case RABBIT_HOLE_PAGE_NOT_FOUND:
+-      // Deliver a 404, and exit.
+-      drupal_not_found();
+-      drupal_exit();
+-
+-    case RABBIT_HOLE_PAGE_REDIRECT:
+-      // Determine the source of the redirect. This will be the entity itself,
+-      // or the default settings from the bundle.
+-      if (rabbit_hole_get_action_entity($entity_type, $entity) != RABBIT_HOLE_USE_DEFAULT) {
+-        // Get the redirect path and response from the entity.
+-        $redirect = rabbit_hole_get_redirect_entity($entity_type, $entity);
+-        $redirect_response = rabbit_hole_get_redirect_response_entity($entity_type, $entity);
+-      }
+-      else {
+-        // Get the redirect path and response from the bundle.
+-        $bundle = rabbit_hole_entity_get_bundle($entity_type, $entity);
+-        $redirect = rabbit_hole_get_redirect_bundle($entity_type, $bundle);
+-        $redirect_response = rabbit_hole_get_redirect_response_bundle($entity_type, $bundle);
+-      }
+-
+-      // Process the PHP code, if it has been provided.
+-      if (rabbit_hole_contains_php($redirect)) {
+-        // Retrieve the PHP code.
+-        $php = preg_replace('/(.*(?=\<\?php)|(?<=\?\>).*)/uis', '', $redirect);
+-
+-        // Evaluate the PHP code.
+-        $result = rabbit_hole_eval($php, $entity);
+-
+-        // If the code returned FALSE, we'll exit since the user shouldn't get
+-        // redirected.
+-        if ($result === FALSE) {
+-          return FALSE;
+-        }
+-
+-        // Replace the PHP part with the evaluation result. If the result isn't
+-        // a string, we'll remove the PHP part altogether.
+-        $result = is_string($result) ? $result : '';
+-        $redirect = str_replace($php, $result, $redirect);
+-      }
+-
+-      // Remove any line breaks and strip whitespaces from the beginning and the
+-      // end of the string.
+-      $redirect = trim(str_replace(array("\r", "\n"), '', $redirect));
+-
+-      // Replace any tokens with real values.
+-      $entity_info = entity_get_info($entity_type);
+-      $token_data = isset($entity_info['token type']) ? array($entity_info['token type'] => $entity) : array();
+-      $redirect = token_replace($redirect, $token_data, array('clear' => TRUE));
+-
+-      // Parse the supplied redirect path in order to get the details.
+-      $redirect_data = drupal_parse_url($redirect);
+-
+-      // Perform the redirect.
+-      drupal_goto($redirect_data['path'], $redirect_data, $redirect_response);
++function rabbit_hole_help($route_name, RouteMatchInterface $route_match) {
++  switch ($route_name) {
++    // Main module help for the rabbit_hole module.
++    case 'help.page.rabbit_hole':
++      $output = '';
++      $output .= '<h3>' . t('About') . '</h3>';
++      $output .= '<p>' . t('Basic functionality that is shared among the different Rabbit Hole modules.') . '</p>';
++      return $output;
+ 
+     default:
+-      // There's nothing to do.
+-      return FALSE;
+   }
+ }
+ 
+ /**
+- * Determines if the provided string contains any PHP code or not.
+- *
+- * @param string $code
+- *   The code that we should search for PHP opening and closure tags.
+- *
+- * @return bool
+- *   TRUE or FALSE depending on wether or not the code contains both the opening
+- *   and closure tags.
++ * Implements hook_theme().
+  */
+-function rabbit_hole_contains_php($code) {
+-  return strpos($code, '<?php') !== FALSE && strpos($code, '?>') !== FALSE;
+-}
++function rabbit_hole_theme() {
++  $theme = [];
+ 
+-/**
+- * Evaluates php code and passes the $entity object into it.
+- *
+- * This is a simple call to eval() wrapped in a function to prevent the user
+- * from overwriting variables. We don't want to use output buffering to capture
+- * the printed values from the code, since we're only interested in the return
+- * value.
+- *
+- * @param string $code
+- *   The PHP code that should get evaluated.
+- * @param object $entity
+- *   The entity object.
+- *
+- * @return mixed
+- *   The return value from the evaluation.
+- */
+-function rabbit_hole_eval($code, $entity) {
+-  // Remove the opening and closure tags before evaluating.
+-  $code = trim(str_replace(array('<?php', '?>'), '', $code));
+-
+-  return eval($code);
++  return $theme;
+ }
+ 
+ /**
+- * Checks if current user can specify rules using php.
+- *
+- * If the php module isn't enabled this function will always return
+- * FALSE. This is done to prevent users using the php rules to execute
+- * arbitary code on the site.
+- *
+- * @param string $module
+- *   The name of the module the user is changing the rule for.
+- *
+- * @return bool
+- *   TRUE if the user can use php, otherwise FALSE.
++ * Handle general aspects of rabbit hole form submission
++ * @param type $form
++ * @param type &$form_state
+  */
+-function rabbit_hole_access_php($module) {
+-  // Don't allow if the php module isn't enabled.
+-  if (!module_exists('php')) {
+-    return FALSE;
+-  }
+-
+-  return user_access('php redirect ' . $module);
++function _rabbit_hole_general_form_submit($form, $form_state) {
++  \Drupal::service('rabbit_hole.form_mangler')
++    ->handleFormSubmit($form, $form_state);
+ }
+ 
+ /**
+- * Implements hook_menu_local_tasks_alter().
++ * Implements hook_form_alter().
+  */
+-function rabbit_hole_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+-  $primary = &$data['tabs'][0];
+-
+-  if (!is_array($primary['output'])) {
+-    // There are no tabs present, exit early.
+-    return;
+-  }
+-
+-  // Get the modules that implements hook_rabbit_hole().
+-  $modules = module_invoke_all('rabbit_hole');
+-
+-  // Iterate through the primary tabs, and look for the View tab for any entity
+-  // that is handled by Rabbit Hole.
+-  foreach ($primary['output'] as $delta => $element) {
+-    // If path is not set on this item, just continue to the next item.
+-    if (!isset($element['#link']['path'])) {
+-      continue;
+-    }
++function rabbit_hole_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
++  $affected_types = \Drupal::service('plugin.manager.rabbit_hole_entity_plugin')
++    ->loadSupportedEntityTypes();
++  $affected_bundle_types = \Drupal::service('plugin.manager.rabbit_hole_entity_plugin')
++    ->loadSupportedBundleEntityTypes();
++  $affected_global_forms = \Drupal::service('plugin.manager.rabbit_hole_entity_plugin')
++    ->loadSupportedGlobalForms();
++  if (method_exists($form_state->getFormObject(), 'getEntity')) {
++    $current_type = $form_state->getFormObject()->getEntity()->getEntityTypeId();
++    $real_type = method_exists($form_state->getFormObject()->getEntity(),
++      'getBundleOf') ? $form_state->getFormObject()->getEntity()->getBundleOf()
++       : $current_type;
++    $administer_permitted = \Drupal::currentUser()
++            ->hasPermission('rabbit hole administer ' . $current_type);
++    if (in_array($current_type, $affected_types) && $administer_permitted) {
++      \Drupal::service('rabbit_hole.form_mangler')->addRabbitHoleOptionsToEntityForm(
++        $form, $form_state->getFormObject()->getEntity());
+ 
+-    foreach ($modules as $module => $info) {
+-      if ($element['#link']['path'] == $info['view path']) {
+-        // Found the View tab, get the Rabbit Hole action for this entity, and
+-        // remove the tab if any Rabbit Hole action has been set.
+-        $entity_position = array_search('%', explode('/', $info['view path']));
+-        $entity = menu_get_object($info['entity type'], $entity_position, $router_item['tab_root_href']);
+-        if (isset($entity)) {
+-          $bundle = rabbit_hole_entity_get_bundle($info['entity type'], $entity);
+-          if (rabbit_hole_get_action($info['entity type'], $entity) != RABBIT_HOLE_DISPLAY_CONTENT && !user_access('bypass ' . $module)) {
+-            unset($primary['output'][$delta]);
+-          }
+-        }
+-      }
++      $form_state->setSubmitHandlers(
++        array_merge($form_state->getSubmitHandlers(),
++          array('_rabbit_hole_general_form_submit'))
++      );
+     }
+-  }
+-
+-  // Reset the count and keys for the existing tabs.
+-  $primary['output'] = array_values($primary['output']);
+-  $primary['count'] = count($primary['output']);
+-}
+-
+-/**
+- * Determines the actual action for an entity.
+- *
+- * This will check the action for an entity, and if it's set to the bundle
+- * default, it will check the bundle action.
+- *
+- * @param string $entity_type
+- *   The entity type that we're checking.
+- * @param object $entity
+- *   The entity that we're checking.
+- *
+- * @return int
+- *   The Rabbit Hole action that should be performed.
+- */
+-function rabbit_hole_get_action($entity_type, $entity) {
+-  $bundle = rabbit_hole_entity_get_bundle($entity_type, $entity);
+-  return isset($entity) && isset($entity->rh_action) && rabbit_hole_get_override_bundle($entity_type, $bundle) ? ($entity->rh_action != RABBIT_HOLE_USE_DEFAULT ? $entity->rh_action : rabbit_hole_get_action_bundle($entity_type, $bundle)) : rabbit_hole_get_action_bundle($entity_type, $bundle);
+-}
+-
+-/**
+- * Gets the action for a bundle.
+- *
+- * @param string $entity_type
+- *   The entity type of the bundle.
+- * @param string $bundle
+- *   The bundle that we're checking.
+- *
+- * @return int
+- *   The Rabbit Hole action set for the bundle.
+- */
+-function rabbit_hole_get_action_bundle($entity_type, $bundle) {
+-  return variable_get('rh_' . $entity_type . '_action_' . $bundle, RABBIT_HOLE_DISPLAY_CONTENT);
+-}
+-
+-/**
+- * Gets the redirect path for a bundle.
+- *
+- * @param string $entity_type
+- *   The entity type of the bundle.
+- * @param string $bundle
+- *   The bundle that we're checking.
+- *
+- * @return string
+- *   The redirect path set for the bundle.
+- */
+-function rabbit_hole_get_redirect_bundle($entity_type, $bundle) {
+-  return variable_get('rh_' . $entity_type . '_redirect_' . $bundle, RABBIT_HOLE_PAGE_REDIRECT_DEFAULT);
+-}
+-
+-/**
+- * Gets the redirect response for a bundle.
+- *
+- * @param string $entity_type
+- *   The entity type of the bundle.
+- * @param string $bundle
+- *   The bundle that we're checking.
+- *
+- * @return int
+- *   The redirect response set for the bundle.
+- */
+-function rabbit_hole_get_redirect_response_bundle($entity_type, $bundle) {
+-  return variable_get('rh_' . $entity_type . '_redirect_response_' . $bundle, RABBIT_HOLE_PAGE_REDIRECT_RESPONSE_DEFAULT);
+-}
+-
+-/**
+- * Gets the override settings for a bundle.
+- *
+- * @param string $entity_type
+- *   The entity type of the bundle.
+- * @param string $bundle
+- *   The bundle that we're checking.
+- *
+- * @return bool
+- *   TRUE or FALSE depending on wether or not the settings are able to be
+- *   overridden for individual entities.
+- */
+-function rabbit_hole_get_override_bundle($entity_type, $bundle) {
+-  return variable_get('rh_' . $entity_type . '_override_' . $bundle, FALSE);
+-}
+-
+-/**
+- * Gets the action for an entity.
+- *
+- * @param string $entity_type
+- *   The entity type of the entity.
+- * @param object $entity
+- *   The entity that we're checking.
+- *
+- * @return int
+- *   The Rabbit Hole action set for the entity.
+- */
+-function rabbit_hole_get_action_entity($entity_type, $entity) {
+-  return isset($entity->rh_action) ? $entity->rh_action : RABBIT_HOLE_USE_DEFAULT;
+-}
+-
+-/**
+- * Gets the redirect path for an entity.
+- *
+- * @param string $entity_type
+- *   The entity type of the bundle.
+- * @param object $entity
+- *   The entity that we're checking.
+- *
+- * @return string
+- *   The redirect path set for the entity.
+- */
+-function rabbit_hole_get_redirect_entity($entity_type, $entity) {
+-  return isset($entity->rh_redirect) ? $entity->rh_redirect : RABBIT_HOLE_PAGE_REDIRECT_DEFAULT;
+-}
+-
+-/**
+- * Gets the redirect response for an entity.
+- *
+- * @param string $entity_type
+- *   The entity type of the bundle.
+- * @param object $entity
+- *   The entity that we're checking.
+- *
+- * @return int
+- *   The redirect response set for the entity.
+- */
+-function rabbit_hole_get_redirect_response_entity($entity_type, $entity) {
+-  return isset($entity->rh_redirect_response) ? $entity->rh_redirect_response : RABBIT_HOLE_PAGE_REDIRECT_RESPONSE_DEFAULT;
+-}
+-
+-/**
+- * Deletes variables associated with an entity type and bundle.
+- *
+- * This should be executed when a module in uninstalled or a bundle is deleted.
+- */
+-function rabbit_hole_delete_variables($entity_type, $bundle) {
+-  variable_del('rh_' . $entity_type . '_action_' . $bundle);
+-  variable_del('rh_' . $entity_type . '_redirect_' . $bundle);
+-  variable_del('rh_' . $entity_type . '_redirect_response_' . $bundle);
+-}
+-
+-/**
+- * Gets the bundle of an entity.
+- *
+- * @param string $entity_type
+- *   The entity type for the entity.
+- * @param object $entity
+- *   The entity that we're checking.
+- *
+- * @return string
+- *   The machine name for the bundle.
+- */
+-function rabbit_hole_entity_get_bundle($entity_type, $entity) {
+-  $entity_info = entity_get_info($entity_type);
+-
+-  // Use the bundle key to get the bundle for this entity if the bundle key has
+-  // been defined. If it hasn't, it means that this entity only provides one
+-  // bundle, and that bundle will always have the same name as the entoty type.
+-  // E.g, the user entity is built by one bundle, and that bundle is also called
+-  // user.
+-  //
+-  // @see hook_entity_info()
+-  return !empty($entity_info['entity keys']['bundle']) ? $entity->{$entity_info['entity keys']['bundle']} : $entity_type;
+-}
+-
+-/**
+- * Implements hook_schema_alter().
+- */
+-function rabbit_hole_schema_alter(&$schema) {
+-  // Get the Rabbit Hole fields.
+-  $fields = rabbit_hole_schema_fields();
+-
+-  // Get the modules that are implementing hook_rabbit_hole(), and add the
+-  // fields to the base table of that entity.
+-  $modules = module_invoke_all('rabbit_hole');
+-  foreach ($modules as $module => $info) {
+-    $schema[$info['base table']]['fields'] += $fields;
+-  }
+-}
+-
+-/**
+- * Implements hook_modules_enabled().
+- */
+-function rabbit_hole_modules_enabled($modules) {
+-  foreach ($modules as $module) {
+-    // If this module implements hook_rabbit_hole(), we should add the Rabbit
+-    // Hole fields to the base table of the entity type that this module is
+-    // altering.
+-    $function = $module . '_rabbit_hole';
+-    if (function_exists($function)) {
+-      // Gather info about the module, entity and get the Rabbit Hole fields.
+-      $rabbit_hole_info = $function();
+-      $entity_info = entity_get_info($rabbit_hole_info[$module]['entity type']);
+-      $fields = rabbit_hole_schema_fields();
+-
+-      // Add each field to the base table for the entity.
+-      foreach ($fields as $name => $spec) {
+-        if (!db_field_exists($entity_info['base table'], $name)) {
+-          db_add_field($entity_info['base table'], $name, $spec);
+-        }
+-      }
++    else if (in_array($current_type, $affected_bundle_types)) {
++      \Drupal::service('rabbit_hole.form_mangler')->addRabbitHoleOptionsToEntityForm(
++        $form, $form_state->getFormObject()->getEntity());
++      $form_state->setSubmitHandlers(
++        array_merge($form_state->getSubmitHandlers(),
++          array('_rabbit_hole_general_form_submit'))
++      );
+     }
+   }
+-}
+-
+-/**
+- * Implements hook_modules_uninstalled().
+- */
+-function rabbit_hole_modules_uninstalled($modules) {
+-  foreach ($modules as $module) {
+-    // If this module implements hook_rabbit_hole(), we should remove the Rabbit
+-    // Hole fields from the base table of the entity type that this module is
+-    // altering. We need to include the .module file manually, since the module
+-    // hsa been uninstalled and therefore, isn't reachable the normal way.
+-    require_once DRUPAL_ROOT . '/' . drupal_get_path('module', $module) . '/' . $module . '.module';
+-    $function = $module . '_rabbit_hole';
+-    if (function_exists($function)) {
+-      // Gather info about the module, entity and get the Rabbit Hole fields.
+-      $rabbit_hole_info = $function();
+-      $entity_info = entity_get_info($rabbit_hole_info[$module]['entity type']);
+-      $fields = rabbit_hole_schema_fields();
+-
+-      // Remove each field from the base table for the entity.
+-      foreach ($fields as $name => $spec) {
+-        if (db_field_exists($entity_info['base table'], $name)) {
+-          db_drop_field($entity_info['base table'], $name);
+-        }
+-      }
+-
+-      // Delete any variables that is set the this entity.
+-      foreach ($entity_info['bundles'] as $bundle => $info) {
+-        rabbit_hole_delete_variables($rabbit_hole_info[$module]['entity type'], $bundle);
+-      }
+-    }
++  else if (array_key_exists($form_id, $affected_global_forms)) {
++    \Drupal::service('rabbit_hole.form_mangler')->addRabbitHoleOptionsToGlobalForm(
++       $form, $affected_global_forms[$form_id]
++    );
+   }
+ }
+-
+-/**
+- * Helper function that defines the Rabbit Hole database fields.
+- *
+- * @return array
+- *   An array with the field specifications, keyed by the field name.
+- */
+-function rabbit_hole_schema_fields() {
+-  $fields = array(
+-    'rh_action' => array(
+-      'description' => 'Specifies which action that Rabbit Hole should take.',
+-      'type' => 'int',
+-      'default' => NULL,
+-    ),
+-    'rh_redirect' => array(
+-      'description' => 'The path to where the user should get redirected to.',
+-      'type' => 'text',
+-      'default' => NULL,
+-      'size' => 'big',
+-    ),
+-    'rh_redirect_response' => array(
+-      'description' => 'Specifies the HTTP response code that should be used when perform a redirect.',
+-      'type' => 'int',
+-      'default' => NULL,
+-    ),
+-  );
+-
+-  return $fields;
+-}
+diff --git a/rabbit_hole.permissions.yml b/rabbit_hole.permissions.yml
+new file mode 100644
+index 0000000..7b983b4
+--- /dev/null
++++ b/rabbit_hole.permissions.yml
+@@ -0,0 +1,2 @@
++permission_callbacks:
++  - Drupal\rabbit_hole\RabbitHolePermissionGenerator::permissions
+\ No newline at end of file
+diff --git a/rabbit_hole.services.yml b/rabbit_hole.services.yml
+new file mode 100644
+index 0000000..bb34907
+--- /dev/null
++++ b/rabbit_hole.services.yml
+@@ -0,0 +1,39 @@
++services:
++  plugin.manager.rabbit_hole_entity_plugin:
++    class: Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager
++    parent: default_plugin_manager
++    arguments:
++      - '@entity_type.manager'
++  plugin.manager.rabbit_hole_behavior_plugin:
++    class: Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager
++    parent: default_plugin_manager
++  rabbit_hole.behavior_settings_manager:
++    class: Drupal\rabbit_hole\BehaviorSettingsManager
++    arguments: ["@config.factory"]
++  rabbit_hole.form_mangler:
++    class: Drupal\rabbit_hole\FormManglerService
++    arguments:
++      - '@entity_type.manager'
++      - '@entity_type.bundle.info'
++      - '@plugin.manager.rabbit_hole_behavior_plugin'
++      - "@plugin.manager.rabbit_hole_entity_plugin"
++      - '@rabbit_hole.behavior_settings_manager'
++      - "@string_translation"
++  rabbit_hole.behavior_invoker:
++    class: Drupal\rabbit_hole\BehaviorInvoker
++    arguments:
++      - "@rabbit_hole.behavior_settings_manager"
++      - "@plugin.manager.rabbit_hole_behavior_plugin"
++      - "@plugin.manager.rabbit_hole_entity_plugin"
++      - "@rabbit_hole.entity_extender"
++      - "@current_user"
++  rabbit_hole.rabbit_hole_subscriber:
++    class: Drupal\rabbit_hole\EventSubscriber\RabbitHoleSubscriber
++    arguments: ["@rabbit_hole.behavior_invoker"]
++    tags:
++      - { name: event_subscriber }
++  rabbit_hole.entity_extender:
++    class: Drupal\rabbit_hole\EntityExtender
++    arguments:
++      - "@plugin.manager.rabbit_hole_behavior_plugin"
++      - "@plugin.manager.rabbit_hole_entity_plugin"
+diff --git a/src/Annotation/RabbitHoleBehaviorPlugin.php b/src/Annotation/RabbitHoleBehaviorPlugin.php
+new file mode 100644
+index 0000000..f7fcde8
+--- /dev/null
++++ b/src/Annotation/RabbitHoleBehaviorPlugin.php
+@@ -0,0 +1,38 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Annotation\RabbitHoleBehaviorPlugin.
++ */
++
++namespace Drupal\rabbit_hole\Annotation;
++
++use Drupal\Component\Annotation\Plugin;
++
++/**
++ * Defines a Rabbit hole behavior plugin item annotation object.
++ *
++ * @see \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager
++ * @see plugin_api
++ *
++ * @Annotation
++ */
++class RabbitHoleBehaviorPlugin extends Plugin {
++
++  /**
++   * The plugin ID.
++   *
++   * @var string
++   */
++  public $id;
++
++  /**
++   * The label of the plugin.
++   *
++   * @var \Drupal\Core\Annotation\Translation
++   *
++   * @ingroup plugin_translatable
++   */
++  public $label;
++
++}
+diff --git a/src/Annotation/RabbitHoleEntityPlugin.php b/src/Annotation/RabbitHoleEntityPlugin.php
+new file mode 100644
+index 0000000..7093ec4
+--- /dev/null
++++ b/src/Annotation/RabbitHoleEntityPlugin.php
+@@ -0,0 +1,45 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Annotation\RabbitHoleEntityPlugin.
++ */
++
++namespace Drupal\rabbit_hole\Annotation;
++
++use Drupal\Component\Annotation\Plugin;
++
++/**
++ * Defines a Rabbit hole entity plugin item annotation object.
++ *
++ * @see \Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager
++ * @see plugin_api
++ *
++ * @Annotation
++ */
++class RabbitHoleEntityPlugin extends Plugin {
++
++  /**
++   * The plugin ID.
++   *
++   * @var string
++   */
++  public $id;
++
++  /**
++   * The label of the plugin.
++   *
++   * @var \Drupal\Core\Annotation\Translation
++   *
++   * @ingroup plugin_translatable
++   */
++  public $label;
++
++  /**
++   * The string id of the affected entity.
++   *
++   * @var string
++   */
++  public $entityType;
++
++}
+diff --git a/src/BehaviorInvoker.php b/src/BehaviorInvoker.php
+new file mode 100644
+index 0000000..bac56d2
+--- /dev/null
++++ b/src/BehaviorInvoker.php
+@@ -0,0 +1,177 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\BehaviorInvoker.
++ */
++
++namespace Drupal\rabbit_hole;
++
++use Drupal\Core\Entity\ContentEntityBase;
++use Drupal\Core\Session\AccountProxy;
++use Drupal\rabbit_hole\BehaviorSettingsManager;
++use Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager;
++use Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginInterface;
++use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager;
++use Drupal\rabbit_hole\EntityExtender;
++use Symfony\Component\HttpFoundation\Response;
++
++/**
++ * Class BehaviorInvoker.
++ *
++ * @package Drupal\rabbit_hole
++ */
++class BehaviorInvoker implements BehaviorInvokerInterface {
++
++  /**
++   * Drupal\rabbit_hole\BehaviorSettingsManager definition.
++   *
++   * @var Drupal\rabbit_hole\BehaviorSettingsManager
++   */
++  protected $rhBehaviorSettingsManager;
++
++  /**
++   * Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager definition.
++   *
++   * @var Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager
++   */
++  protected $rhBehaviorPluginManager;
++
++  /**
++   * Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager definition.
++   *
++   * @var Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager
++   */
++  protected $rhEntityPluginManager;
++
++  /**
++   * Drupal\rabbit_hole\EntityExtender definition.
++   */
++  protected $rhEntityExtender;
++
++  /**
++   * The current user
++   *
++   * @var Drupal\Core\Session\AccountProxy
++   */
++  protected $currentUser;
++
++  /**
++   * Constructor.
++   */
++  public function __construct(
++    BehaviorSettingsManager $rabbit_hole_behavior_settings_manager,
++    RabbitHoleBehaviorPluginManager $plugin_manager_rabbit_hole_behavior_plugin,
++    RabbitHoleEntityPluginManager $plugin_manager_rabbit_hole_entity_plugin,
++    EntityExtender $entity_extender,
++    AccountProxy $current_user
++  ) {
++    $this->rhBehaviorSettingsManager = $rabbit_hole_behavior_settings_manager;
++    $this->rhBehaviorPluginManager = $plugin_manager_rabbit_hole_behavior_plugin;
++    $this->rhEntityPluginManager = $plugin_manager_rabbit_hole_entity_plugin;
++    $this->rhEntityExtender = $entity_extender;
++    $this->currentUser = $current_user;
++  }
++
++  /**
++   * Invoke a rabbit hole behavior based on an entity's configuration.
++   *
++   * This assumes the entity is configured for use with Rabbit Hole - if you
++   * pass an entity to this method and it does not have a rabbit hole plugin it
++   * will use the defaults!
++   *
++   * This method can be triggered with a response if any plugins need it but
++   * this actually has no effect right now. Left it in because it might be
++   * useful.
++   */
++  public function processEntity($entity, Response $current_response = NULL) {
++    $permission = 'rabbit hole bypass ' . $entity->getEntityTypeId();
++    if ($this->currentUser->hasPermission($permission)) {
++      return NULL;
++    }
++
++    $values = $this->getRabbitHoleValuesForEntity($entity);
++    $plugin = $this->rhBehaviorPluginManager
++      ->createInstance($values['rh_action'], $values);
++
++    $resp_use = $plugin->usesResponse();
++    $response_required = $resp_use == RabbitHoleBehaviorPluginInterface::USES_RESPONSE_ALWAYS;
++    $response_allowed = $resp_use == $response_required
++      || $resp_use == RabbitHoleBehaviorPluginInterface::USES_RESPONSE_SOMETIMES;
++
++    // Most plugins never make use of the response and only run when it's not
++    // provided (i.e. on a request event).
++    if ((!$response_allowed && $current_response == NULL)
++      // Some plugins may or may not make use of the response so they'll run in
++      // both cases and work out the logic of when to return NULL internally.
++      || $response_allowed
++      // Though none exist at the time of this writing, some plugins could
++      // require a response so that case is handled.
++      || $response_required && $current_response != NULL) {
++
++      return $plugin->performAction($entity, $current_response);
++    }
++    // All other cases return NULL, meaning the response is unchanged.
++    else {
++      return NULL;
++    }
++  }
++
++  /**
++   * Load a list of entity IDs supported by rabbit hole given available plugins.
++   *
++   * @return array
++   *   An array of string entity ids.
++   */
++  public function getPossibleEntityTypeKeys() {
++    $entity_type_keys = array();
++    foreach ($this->rhEntityPluginManager->getDefinitions() as $def) {
++      $entity_type_keys[] = $def['entityType'];
++    }
++    return $entity_type_keys;
++  }
++
++  /**
++   * An entity's rabbit hole configuration, or the default if it does not exist.
++   *
++   * Return an entity's rabbit hole configuration or, failing that, the default
++   * configuration for the bundle (which itself will call the base default
++   * configuration if necessary).
++   *
++   * @return array
++   *   An array of values from the entity's fields matching the base properties
++   *   added by rabbit hole.
++   */
++  private function getRabbitHoleValuesForEntity(ContentEntityBase $entity) {
++    $field_keys = array_keys($this->rhEntityExtender->getGeneralExtraFields());
++    $values = array();
++    // We trigger the default bundle action under the following circumstances:
++    // Entity does not have rh_action field.
++    $trigger_default_bundle_action = !$entity->hasField('rh_action')
++    // Entity has rh_action field but it's null (hasn't been set).
++      || $entity->get('rh_action')->value == NULL
++    // Entity has been explicitly set to use the default bundle action.
++      || $entity->get('rh_action')->value == 'bundle_default';
++
++    if ($trigger_default_bundle_action) {
++      $config = $this->rhBehaviorSettingsManager->loadBehaviorSettingsAsConfig(
++        $entity->getEntityType()->getBundleEntityType()
++          ?: $entity->getEntityType()->id(),
++        $entity->bundle());
++
++      foreach ($field_keys as $field_key) {
++        $config_field_key = substr($field_key, 3);
++        $values[$field_key] = $config->get($config_field_key);
++      }
++    }
++    else {
++      foreach ($field_keys as $field_key) {
++        if ($entity->hasField($field_key)) {
++          $values[$field_key] = $entity->{$field_key}->value;
++        }
++      }
++    }
++    return $values;
++  }
++
++}
+diff --git a/src/BehaviorInvokerInterface.php b/src/BehaviorInvokerInterface.php
+new file mode 100644
+index 0000000..f899850
+--- /dev/null
++++ b/src/BehaviorInvokerInterface.php
+@@ -0,0 +1,18 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\BehaviorInvokerInterface.
++ */
++
++namespace Drupal\rabbit_hole;
++
++/**
++ * Interface BehaviorInvokerInterface.
++ *
++ * @package Drupal\rabbit_hole
++ */
++interface BehaviorInvokerInterface {
++
++
++}
+diff --git a/src/BehaviorSettingsInterface.php b/src/BehaviorSettingsInterface.php
+new file mode 100644
+index 0000000..d2599c4
+--- /dev/null
++++ b/src/BehaviorSettingsInterface.php
+@@ -0,0 +1,79 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\BehaviorSettingsInterface.
++ */
++
++namespace Drupal\rabbit_hole;
++
++use Drupal\Core\Config\Entity\ConfigEntityInterface;
++
++/**
++ * Provides an interface for defining Behavior settings entities.
++ */
++interface BehaviorSettingsInterface extends ConfigEntityInterface {
++
++  /**
++   * Set the configured action.
++   *
++   * @param string $action
++   *   The action to save.
++   */
++  public function setAction($action);
++
++  /**
++   * Get the configured action.
++   *
++   * @return string
++   *   The action id.
++   */
++  public function getAction();
++
++  /**
++   * Set whether overrides are allowed if this is for a bundle.
++   *
++   * @param int $allow_override
++   *   0 (N/A), 1 (Allow), or 2 (Disallow).
++   */
++  public function setAllowOverride($allow_override);
++
++  /**
++   * Get whether overrides are allowed if this is for a bundle.
++   *
++   * @return int
++   *   Whether overrides are allowed if this is for a bundle. 0 (N/A), 1
++   *   (Allow), or 2 (Disallow).
++   */
++  public function getAllowOverride();
++
++  /**
++   * Set the redirect code if action is redirect.
++   *
++   * @param int $redirect_code
++   *   The redirect code (0 for N/A).
++   */
++  public function setRedirectCode($redirect_code);
++
++  /**
++   * Get the redirect code if action is redirect.
++   */
++  public function getRedirectCode();
++
++  /**
++   * Set the redirect path if action is redirect.
++   *
++   * @param string $redirect
++   *   The redirect path.
++   */
++  public function setRedirectPath($redirect);
++
++  /**
++   * Get the redirect path if action is redirect.
++   *
++   * @return string
++   *   The redirect path.
++   */
++  public function getRedirectPath();
++
++}
+diff --git a/src/BehaviorSettingsManager.php b/src/BehaviorSettingsManager.php
+new file mode 100644
+index 0000000..9399c3e
+--- /dev/null
++++ b/src/BehaviorSettingsManager.php
+@@ -0,0 +1,105 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\BehaviorSettingsManager.
++ */
++
++namespace Drupal\rabbit_hole;
++
++use Drupal\Core\Config\ConfigFactory;
++use Drupal\rabbit_hole\Entity\BehaviorSettings;
++
++/**
++ * Class BehaviorSettingsManager.
++ *
++ * @package Drupal\rabbit_hole
++ */
++class BehaviorSettingsManager implements BehaviorSettingsManagerInterface {
++
++  /**
++   * Drupal\Core\Config\ConfigFactory definition.
++   *
++   * @var Drupal\Core\Config\ConfigFactory
++   */
++  protected $configFactory;
++
++  /**
++   * Constructor.
++   */
++  public function __construct(ConfigFactory $config_factory) {
++    $this->configFactory = $config_factory;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function saveBehaviorSettings($settings, $entity_type_id, $entity_id = NULL) {
++
++    $id = $this->generateBehaviorSettingsFullId($entity_type_id, $entity_id);
++
++    $entity = BehaviorSettings::load($id);
++    if ($entity === NULL) {
++      $entity_array = array('id' => $id);
++      $entity_array += $settings;
++      $entity = BehaviorSettings::create($entity_array);
++    }
++    else {
++      foreach ($settings as $key => $setting) {
++        $entity->set($key, $setting);
++      }
++    }
++    $entity->save();
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function loadBehaviorSettingsAsConfig($entity_type_id,
++    $entity_id = NULL) {
++
++    $actual = $this->configFactory->get(
++      'rabbit_hole.behavior_settings.'
++        . $this->generateBehaviorSettingsFullId($entity_type_id, $entity_id));
++    if (!$actual->isNew()) {
++      return $actual;
++    }
++    else {
++      return $this->configFactory
++        ->get('rabbit_hole.behavior_settings.default');
++    }
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function loadBehaviorSettingsAsEditableConfig($entity_type_id,
++    $entity_id, $is_bundle = FALSE) {
++
++    $actual = $this->configFactory->getEditable(
++      'rabbit_hole.behavior_settings.'
++        . $this->generateBehaviorSettingsFullId($entity_type_id, $entity_id,
++            $is_bundle
++      )
++    );
++    return !$actual->isNew() ? $actual : NULL;
++  }
++
++
++  /**
++   * Generate a full ID based on entity type label, bundle label and entity id.
++   *
++   * @param string $entity_type_id
++   *   The entity type (e.g. node) as a string.
++   * @param string $entity_id
++   *   The entity ID as a string.
++   *
++   * @return string
++   *   The full id appropriate for a BehaviorSettings config entity.
++   */
++  private function generateBehaviorSettingsFullId($entity_type_id,
++    $entity_id = '') {
++    return $entity_type_id . (isset($entity_id) ? '_' . $entity_id : '');
++  }
++
++}
+diff --git a/src/BehaviorSettingsManagerInterface.php b/src/BehaviorSettingsManagerInterface.php
+new file mode 100644
+index 0000000..696b04e
+--- /dev/null
++++ b/src/BehaviorSettingsManagerInterface.php
+@@ -0,0 +1,62 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\BehaviourSettingsManagerInterface.
++ */
++
++namespace Drupal\rabbit_hole;
++
++/**
++ * Interface BehaviourSettingsManagerInterface.
++ *
++ * @package Drupal\rabbit_hole
++ */
++interface BehaviorSettingsManagerInterface {
++
++  /**
++   * Save behavior settings for an entity or bundle.
++   *
++   * @param array $settings
++   *   The settings for the BehaviorSettings entity.
++   * @param string $entity_type_id
++   *   The entity type (e.g. node) as a string.
++   * @param string $entity_id
++   *   The entity ID as a string.
++   */
++  public function saveBehaviorSettings($settings, $entity_type_id, $entity_id);
++
++  /**
++   * Load behaviour settings for an entity or bundle, or load the defaults.
++   *
++   * Load rabbit hole behaviour settings appropriate to the given config or
++   * default settings if not available.
++   *
++   * @param string $entity_type_label
++   *   The entity type (e.g. node) as a string.
++   * @param string $entity_id
++   *   The entity ID as a string.
++   *
++   * @return \Drupal\Core\Config\ImmutableConfig
++   *   The BehaviorSettings Config object.
++   */
++  public function loadBehaviorSettingsAsConfig($entity_type_label, $entity_id);
++
++  /**
++   * Load behaviour settings for an entity or bundle, or return NULL.
++   *
++   * Load editable rabbit hole behaviour settings appropriate to the given
++   * config or NULL if not available.
++   *
++   * @param string $entity_type_label
++   *   The entity type (e.g. node) as a string.
++   * @param string $entity_id
++   *   The entity ID as a string.
++   *
++   * @return \Drupal\Core\Config\ImmutableConfig|null
++   *   The BehaviorSettings Config object or NULL if it does not exist.
++   */
++  public function loadBehaviorSettingsAsEditableConfig($entity_type_label,
++    $entity_id);
++
++}
+diff --git a/src/Entity/BehaviorSettings.php b/src/Entity/BehaviorSettings.php
+new file mode 100644
+index 0000000..715c796
+--- /dev/null
++++ b/src/Entity/BehaviorSettings.php
+@@ -0,0 +1,162 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Entity\BehaviorSettings.
++ */
++
++namespace Drupal\rabbit_hole\Entity;
++
++use Drupal\Core\Config\Entity\ConfigEntityBase;
++use Drupal\rabbit_hole\BehaviorSettingsInterface;
++use Drupal\rabbit_hole\Exception\InvalidBehaviorSettingException;
++
++/**
++ * Defines the Behavior settings entity.
++ *
++ * @ConfigEntityType(
++ *   id = "behavior_settings",
++ *   label = @Translation("Behavior settings"),
++ *   handlers = {},
++ *   config_prefix = "behavior_settings",
++ *   admin_permission = "administer site configuration",
++ *   entity_keys = {
++ *     "id" = "id",
++ *     "uuid" = "uuid",
++ *     "action" = "action",
++ *     "allow_override" = "allow_override",
++ *     "redirect" = "redirect",
++ *     "redirect_code" = "redirect_code"
++ *   },
++ *   links = {}
++ * )
++ */
++class BehaviorSettings extends ConfigEntityBase implements BehaviorSettingsInterface {
++  const OVERRIDE_ALLOW = TRUE;
++  const OVERRIDE_DISALLOW = FALSE;
++
++  const REDIRECT_NOT_APPLICABLE = 0;
++  const REDIRECT_MOVED_PERMANENTLY = 301;
++  const REDIRECT_FOUND = 302;
++  const REDIRECT_SEE_OTHER = 303;
++  const REDIRECT_NOT_MODIFIED = 304;
++  const REDIRECT_USE_PROXY = 305;
++  const REDIRECT_TEMPORARY_REDIRECT = 307;
++
++  /**
++   * The Behavior settings ID.
++   *
++   * @var string
++   */
++  protected $id;
++
++  /**
++   * The configured action (e.g. display_page).
++   *
++   * @var string
++   */
++  protected $action;
++
++  /**
++   * Whether inherited behaviors can be edited (if this is a bundle).
++   */
++  protected $allow_override;
++
++  /**
++   * The path to use for redirects (if the action is redirect).
++   *
++   * @todo It may be possible to make this reliant on a plugin instead (i.e.
++   *  the redirect plugin) - if so, we should probably do this
++   */
++  protected $redirect;
++
++  /**
++   * The code to use for redirects (if the action is redirect).
++   *
++   * @todo It may be possible to make this reliant on a plugin instead (i.e.
++   * the redirect plugin) - if so, we should probably do this
++   */
++  protected $redirect_code;
++
++  /**
++   * {@inheritdoc}
++   */
++  public function setAction($action) {
++    $this->action = $action;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getAction() {
++    return $this->action;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function setAllowOverride($allow_override) {
++    if (!is_bool($allow_override)) {
++      throw new InvalidBehaviorSettingException('allow_override');
++    }
++    $this->allow_override = $allow_override;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getAllowOverride() {
++    return $this->allow_override;
++  }
++
++  /**
++   * {@inheritdoc}
++   *
++   * @todo Possibly this should instead rely on the redirect plugin?
++   */
++  public function setRedirectCode($redirect_code) {
++    if (!in_array($redirect_code, array(
++      self::REDIRECT_NOT_APPLICABLE,
++      self::REDIRECT_MOVED_PERMANENTLY,
++      self::REDIRECT_FOUND,
++      self::REDIRECT_SEE_OTHER,
++      self::REDIRECT_NOT_MODIFIED,
++      self::REDIRECT_USE_PROXY,
++      self::REDIRECT_TEMPORARY_REDIRECT,
++    )
++      )) {
++      throw new InvalidBehaviorSettingException('redirect_code');
++    }
++
++    if ($this->action !== 'redirect'
++      && $redirect_code !== self::REDIRECT_NOT_APPLICABLE) {
++      throw new InvalidBehaviorSettingException('redirect_code');
++    }
++    $this->redirect_code = $redirect_code;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getRedirectCode() {
++    return $this->redirect_code;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function setRedirectPath($redirect) {
++    if ($this->action !== 'redirect' && $redirect != "") {
++      throw new InvalidBehaviorSettingException('redirect');
++    }
++    $this->redirect = $redirect;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getRedirectPath() {
++    return $this->redirect;
++  }
++
++}
+diff --git a/src/EntityExtender.php b/src/EntityExtender.php
+new file mode 100644
+index 0000000..8a94eb8
+--- /dev/null
++++ b/src/EntityExtender.php
+@@ -0,0 +1,79 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\EntityExtender.
++ */
++
++namespace Drupal\rabbit_hole;
++
++use Drupal\Core\Field\BaseFieldDefinition;
++use Drupal\Core\StringTranslation\StringTranslationTrait;
++use Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager;
++use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager;
++
++/**
++ * Class EntityExtender.
++ *
++ * @package Drupal\rabbit_hole
++ */
++class EntityExtender implements EntityExtenderInterface {
++  use StringTranslationTrait;
++
++  /**
++   * Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager definition.
++   *
++   * @var Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager
++   */
++  protected $rhBehaviorPluginManager;
++
++  /**
++   * Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager definition.
++   *
++   * @var Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager
++   */
++  protected $rhEntityPluginManager;
++
++  /**
++   * Constructor.
++   */
++  public function __construct(RabbitHoleBehaviorPluginManager $plugin_manager_rabbit_hole_behavior_plugin,
++    RabbitHoleEntityPluginManager $plugin_manager_rabbit_hole_entity_plugin) {
++    $this->rhBehaviorPluginManager = $plugin_manager_rabbit_hole_behavior_plugin;
++    $this->rhEntityPluginManager = $plugin_manager_rabbit_hole_entity_plugin;
++  }
++
++  /**
++   * Return fields added by rabbit hole for use in entity_base_field_info hooks.
++   *
++   * @param string $entity_type_id
++   *   The string ID of the entity type.
++   *
++   * @return array
++   *   An array of general extra fields.
++   */
++  public function getRabbitHoleFields($entity_type_id) {
++    $entity_types = $this->rhEntityPluginManager->loadSupportedEntityTypes();
++    if (in_array($entity_type_id, $entity_types)) {
++      return $this->getGeneralExtraFields();
++    }
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getGeneralExtraFields() {
++    $fields = array();
++    $fields['rh_action'] = BaseFieldDefinition::create('string')
++      ->setName('rh_action')
++      ->setLabel($this->t('Rabbit Hole action'))
++      ->setDescription($this->t('Specifies which action that Rabbit Hole should take.'));
++    foreach ($this->rhBehaviorPluginManager->getDefinitions() as $id => $def) {
++      $this->rhBehaviorPluginManager
++        ->createInstance($id)
++        ->alterExtraFields($fields);
++    }
++    return $fields;
++  }
++
++}
+diff --git a/src/EntityExtenderInterface.php b/src/EntityExtenderInterface.php
+new file mode 100644
+index 0000000..cf223d2
+--- /dev/null
++++ b/src/EntityExtenderInterface.php
+@@ -0,0 +1,21 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\EntityExtenderInterface.
++ */
++
++namespace Drupal\rabbit_hole;
++
++/**
++ * Interface EntityExtenderInterface.
++ *
++ * @package Drupal\rabbit_hole
++ */
++interface EntityExtenderInterface {
++  /**
++   * Get the extra fields that should be applied to all rabbit hole entities.
++   */
++  public function getGeneralExtraFields();
++
++}
+diff --git a/src/EventSubscriber/RabbitHoleSubscriber.php b/src/EventSubscriber/RabbitHoleSubscriber.php
+new file mode 100644
+index 0000000..56f6e57
+--- /dev/null
++++ b/src/EventSubscriber/RabbitHoleSubscriber.php
+@@ -0,0 +1,105 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\EventSubscriber.
++ */
++
++namespace Drupal\rabbit_hole\EventSubscriber;
++
++use Symfony\Component\EventDispatcher\EventSubscriberInterface;
++use Symfony\Component\EventDispatcher\Event;
++use Drupal\rabbit_hole\BehaviorInvoker;
++
++/**
++ * Class EventSubscriber.
++ *
++ * @package Drupal\rabbit_hole
++ */
++class RabbitHoleSubscriber implements EventSubscriberInterface {
++
++  /**
++   * Drupal\rabbit_hole\BehaviorInvoker definition.
++   *
++   * @var Drupal\rabbit_hole\BehaviorInvoker
++   */
++  protected $rabbitHoleBehaviorInvoker;
++
++  /**
++   * Constructor.
++   */
++  public function __construct(BehaviorInvoker $rabbit_hole_behavior_invoker) {
++    $this->rabbitHoleBehaviorInvoker = $rabbit_hole_behavior_invoker;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  static public function getSubscribedEvents() {
++    $events['kernel.request'] = ['onRequest'];
++    $events['kernel.response'] = ['onResponse'];
++    return $events;
++  }
++
++  /**
++   * A method to be called whenever a kernel.request event is dispatched.
++   *
++   * It invokes a rabbit hole behavior on an entity in the request if
++   * applicable.
++   *
++   * @param \Symfony\Component\EventDispatcher\Event $event
++   *   The event triggered by the request.
++   */
++  public function onRequest(Event $event) {
++    return $this->processEvent($event);
++  }
++
++  /**
++   * A method to be called whenever a kernel.response event is dispatched.
++   *
++   * Like the onRequest event, it invokes a rabbit hole behavior on an entity in
++   * the request if possible. Unlike the onRequest event, it also passes in a
++   * response.
++   *
++   * @param \Symfony\Component\EventDispatcher\Event $event
++   *   The event triggered by the response.
++   */
++  public function onResponse(Event $event) {
++    return $this->processEvent($event);
++  }
++
++  /**
++   * Process events generically invoking rabbit hole behaviors if necessary.
++   *
++   * @param \Symfony\Component\EventDispatcher\Event $event
++   *   The event to process.
++   */
++  private function processEvent(Event $event) {
++    // Don't process events with HTTP exceptions - those have either been thrown
++    // by us or have nothing to do with rabbit hole.
++    if ($event->getRequest()->get('exception') != NULL) {
++      return;
++    }
++
++    // We won't go ahead if we have an entity form (i.e. we're adding/editing
++    // an entity).
++    if ($event->getRequest()->get('_entity_form') == NULL) {
++      // We check for all of our known entity keys that work with rabbit hole
++      // and invoke rabbit hole behavior on the first one we find (which
++      // should also be the only one).
++      $entity_keys = $this->rabbitHoleBehaviorInvoker->getPossibleEntityTypeKeys();
++      foreach ($entity_keys as $ekey) {
++        $entity = $event->getRequest()->get($ekey);
++        if (isset($entity)) {
++          $new_response = $this->rabbitHoleBehaviorInvoker
++            ->processEntity($entity, $event->getResponse());
++          if (isset($new_response)) {
++            $event->setResponse($new_response);
++          }
++          break;
++        }
++      }
++    }
++  }
++
++}
+diff --git a/src/Exception/InvalidBehaviorSettingException.php b/src/Exception/InvalidBehaviorSettingException.php
+new file mode 100644
+index 0000000..1a4d447
+--- /dev/null
++++ b/src/Exception/InvalidBehaviorSettingException.php
+@@ -0,0 +1,31 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Exception\InvalidBehaviorSettingException.
++ */
++
++namespace Drupal\rabbit_hole\Exception;
++
++/**
++ * TODO.
++ */
++class InvalidBehaviorSettingException extends \Exception {
++
++  private $setting;
++
++  /**
++   * TODO.
++   */
++  public function __construct($setting) {
++    parent::__construct();
++    $this->setting = $setting;
++  }
++
++  /**
++   * TODO.
++   */
++  public function getSetting() {
++    return $this->setting();
++  }
++
++}
+diff --git a/src/Exception/InvalidRedirectResponseException.php b/src/Exception/InvalidRedirectResponseException.php
+new file mode 100644
+index 0000000..845a6d4
+--- /dev/null
++++ b/src/Exception/InvalidRedirectResponseException.php
+@@ -0,0 +1,21 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Exception\InvalidRedirectResponseException.
++ */
++
++namespace Drupal\rabbit_hole\Exception;
++
++/**
++ * TODO.
++ */
++class InvalidRedirectResponseException extends \Exception {
++
++  /**
++   * TODO.
++   */
++  public function __construct($message = NULL, $code = 0, Exception $previous = NULL) {
++    parent::__construct($message, $code, $previous);
++  }
++
++}
+diff --git a/src/FormManglerService.php b/src/FormManglerService.php
+new file mode 100644
+index 0000000..cc986cb
+--- /dev/null
++++ b/src/FormManglerService.php
+@@ -0,0 +1,362 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\FormManglerService.
++ */
++
++namespace Drupal\rabbit_hole;
++
++use Drupal\Core\Entity\Entity;
++use Drupal\Core\Config\ImmutableConfig;
++use Drupal\Core\Entity\EntityTypeManager;
++use Drupal\Core\Entity\EntityTypeBundleInfo;
++use Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager;
++use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager;
++use Drupal\rabbit_hole\BehaviorSettingsManager;
++use Drupal\rabbit_hole\Entity\BehaviorSettings;
++use Drupal\Core\StringTranslation\StringTranslationTrait;
++use Drupal\Core\StringTranslation\TranslationInterface;
++
++/**
++ * Class FormManglerService.
++ *
++ * @package Drupal\rabbit_hole
++ */
++class FormManglerService {
++  use StringTranslationTrait;
++
++  const RABBIT_HOLE_USE_DEFAULT = 'bundle_default';
++
++  private $entityTypeManager = NULL;
++  private $bundleInfo = NULL;
++  private $rhBehaviorPluginManager = NULL;
++  private $rhEntityPluginManager = NULL;
++
++  /**
++   * Constructor.
++   */
++  public function __construct(
++    EntityTypeManager $etm,
++    EntityTypeBundleInfo $etbi,
++    RabbitHoleBehaviorPluginManager $behavior_plugin_manager,
++    RabbitHoleEntityPluginManager $entity_plugin_manager,
++    BehaviorSettingsManager $behavior_settings_manager,
++    TranslationInterface $translation) {
++
++    $this->entityTypeManager = $etm;
++    $this->allBundleInfo = $etbi->getAllBundleInfo();
++    $this->rhBehaviorPluginManager = $behavior_plugin_manager;
++    $this->rhEntityPluginManager = $entity_plugin_manager;
++    $this->rhBehaviorSettingsManager = $behavior_settings_manager;
++    $this->stringTranslation = $translation;
++  }
++
++  /**
++   * Add rabbit hole options to an entity type's global configuration form.
++   *
++   * (E.g. options for all users).
++   *
++   * @param array $attach
++   *   The form that the Rabbit Hole form should be attached to.
++   * @param string $entity_type
++   *   The name of the entity for which this form provides global options.
++   */
++  public function addRabbitHoleOptionsToGlobalForm(array &$attach, $entity_type) {
++    $entity_type = $this->entityTypeManager->getStorage($entity_type)
++      ->getEntityType();
++
++    $this->addRabbitHoleOptionsToForm($attach, $entity_type->id());
++  }
++
++  /**
++   * Form structure for the Rabbit Hole configuration.
++   *
++   * This should be used by other modules that wish to implement the Rabbit Hole
++   * configurations in any form.
++   *
++   * @param array $attach
++   *   The form that the Rabbit Hole form should be attached to.
++   * @param \Drupal\Core\Entity\Entity $entity
++   *   The entity that we're adding the form to, e.g. a node.  This should be
++   *    defined even in the case of bundles since it is used to determine bundle
++   *    and entity type.
++   */
++  public function addRabbitHoleOptionsToEntityForm(array &$attach, Entity $entity) {
++    $this->addRabbitHoleOptionsToForm($attach, $entity->getEntityType()->id(),
++            $entity);
++  }
++
++  /**
++   * Common functionality for adding rabbit hole options to forms.
++   *
++   * @param array $attach
++   *   The form that the Rabbit Hole form should be attached to.
++   * @param string $entity_type_id
++   *   The string ID of the entity type for the form, e.g. 'node'.
++   * @param object $entity
++   *   The entity that we're adding the form to, e.g. a node.  This should be
++   *    defined even in the case of bundles since it is used to determine bundle
++   *    and entity type.
++   */
++  private function addRabbitHoleOptionsToForm(array &$attach,
++    $entity_type_id, $entity = NULL) {
++    $entity_type = $this->entityTypeManager->getStorage($entity_type_id)
++      ->getEntityType();
++
++    $is_bundle_or_entity_type = FALSE;
++
++    if ($entity === NULL) {
++      $is_bundle_or_entity_type = TRUE;
++    }
++    else {
++      $is_bundle_or_entity_type = $this->isEntityBundle($entity);
++    }
++
++    $bundle_settings = NULL;
++    $bundle = isset($entity) ? $entity->bundle() : $entity_type_id;
++    $action = NULL;
++
++    if ($is_bundle_or_entity_type) {
++      if ($entity === NULL) {
++        $bundle_settings = $this->rhBehaviorSettingsManager
++          ->loadBehaviorSettingsAsConfig($entity_type->id());
++      }
++      else {
++        $bundle_settings = $this->rhBehaviorSettingsManager
++          ->loadBehaviorSettingsAsConfig($entity_type->id(), $entity->id());
++      }
++
++      $action = $bundle_settings->get('action');
++    }
++    else {
++      $bundle_entity_type = $entity_type->getBundleEntityType()
++        ?: $entity_type->id();
++      $bundle_settings = $this->rhBehaviorSettingsManager
++        ->loadBehaviorSettingsAsConfig($bundle_entity_type,
++            $entity->bundle());
++
++      $action = isset($entity->rh_action->value)
++        ? $entity->rh_action->value
++        : 'bundle_default';
++    }
++
++    $entity_plugin = $this->rhEntityPluginManager->createInstanceByEntityType(
++      $is_bundle_or_entity_type ? $entity_type->getBundleOf()
++            : $entity_type->id());
++
++    // If the user doesn't have access, exit.
++    // If the form is about to be attached to an entity, but the bundle isn't
++    // allowed to be overridden, exit.
++    // Get information about the entity.
++    // TODO: Should be possible to get this as plural? Look into this.
++    $entity_label = $entity_type->getLabel();
++
++    $bundle_info = isset($this->allBundleInfo[$entity_type->id()])
++      ? $this->allBundleInfo[$entity_type->id()] : NULL;
++
++    // Get the label for the bundle. This won't be set when the user is creating
++    // a new bundle. In that case, fallback to "this bundle".
++    $bundle_label = NULL !== $bundle_info && NULL !== $bundle_info[$bundle]['label']
++      ? $bundle_info[$bundle]['label'] : $this->t('this bundle');
++
++    // Wrap everything in a fieldset.
++    $form['rabbit_hole'] = array(
++      '#type' => 'details',
++      '#title' => $this->t('Rabbit Hole settings'),
++      '#collapsed' => FALSE,
++      '#collapsible' => TRUE,
++
++      // TODO: Should probably handle group in a plugin - not sure if, e.g.,
++      // files will work in the same way and even if they do later entities
++      // might not.
++      '#group' => $is_bundle_or_entity_type ? 'additional_settings' : 'advanced',
++      '#attributes' => array('class' => array('rabbit-hole-settings-form')),
++    );
++
++    // Add the invoking module to the internal values.
++    // TODO: This can probably be removed - check.
++    $form['rabbit_hole']['rh_is_bundle'] = array(
++      '#type' => 'hidden',
++      '#value' => $is_bundle_or_entity_type,
++    );
++
++    $form['rabbit_hole']['rh_entity_type'] = array(
++      '#type' => 'hidden',
++      '#value' => $entity_type->id(),
++    );
++
++    // Add override setting if we're editing a bundle.
++    if ($is_bundle_or_entity_type) {
++      $allow_override = $bundle_settings->get('allow_override');
++      $form['rabbit_hole']['rh_override'] = array(
++        '#type' => 'checkbox',
++        '#title' => t('Allow these settings to be overridden for individual entities'),
++        '#default_value' => $allow_override,
++        '#description' => t('If this is checked, users with the %permission permission will be able to override these settings for individual entities.', array('%permission' => t('Administer Rabbit Hole settings for @entity_type', array('@entity_type' => $entity_label)))),
++      );
++    }
++
++    // Add action setting.
++    $action_options = $this->loadBehaviorOptions();
++
++    if (!$is_bundle_or_entity_type) {
++      // Add an option if we are editing an entity. This will allow us to use
++      // the configuration for the bundle.
++      $action_bundle = $bundle_settings->get('action');
++      $action_options = array(
++        self::RABBIT_HOLE_USE_DEFAULT => t('Global @bundle behavior (@setting)', array('@bundle' => strtolower($bundle_label), '@setting' => $action_options[$action_bundle])),
++      ) + $action_options;
++    }
++
++    $form['rabbit_hole']['rh_action'] = array(
++      '#type' => 'radios',
++      '#title' => $this->t('Behavior'),
++      '#options' => $action_options,
++      '#default_value' => $action,
++      '#description' => $this->t('What should happen when someone tries to visit an entity page for @bundle?', array('@bundle' => strtolower($bundle_label))),
++      '#attributes' => array('class' => array('rabbit-hole-action-setting')),
++    );
++
++    $this->populateExtraBehaviorSections($form, NULL, NULL, $entity,
++      $is_bundle_or_entity_type, $bundle_settings);
++
++    // TODO: Add redirect settings.
++    //
++    // Wrap the redirect settings in a fieldset.
++    // Get the default value for the redirect path.
++    // Build the descriptive text. Add some help text for PHP, if the user has
++    // the permission to use PHP for evaluation.
++    // Add the redirect path setting.
++    //
++    // TODO: Add token support.
++    //
++    // Display a list of tokens if the Token module is enabled.
++    //
++    // TODO: Add specific options for redirect - possibly via the plugin?
++    //
++    // Add the redirect response setting.
++    //
++    // TODO: Handle possible PHP code in redirect.
++    //
++    // If the redirect path contains PHP, and the user doesn't have permission
++    // to use PHP for evaluation, we'll disable access to the path setting, and
++    // print some helpful information about what's going on.
++    //
++    // Attach the Rabbit Hole form to the main form, and add a custom validation
++    // callback.
++    $attach += $form;
++
++    // TODO: Optionally provide a form validation handler (can we do this via
++    // plugin?).
++    //
++    // If the implementing module provides a submit function for the bundle
++    // form, we'll add it as a submit function for the attached form. We'll also
++    // make sure that this won't be added for entity forms.
++    //
++    // TODO: This should probably be moved out into plugins based on entity
++    // type.
++    $submit_handler_locations = $entity_plugin
++      ->getFormSubmitHandlerAttachLocations();
++
++    foreach ($submit_handler_locations as $location) {
++      $array_ref = &$attach;
++      foreach ($location as $subkey) {
++        $array_ref = &$array_ref[$subkey];
++      }
++      $array_ref[] = '_rabbit_hole_general_form_submit';
++    }
++
++    // TODO: Optionally provide additional form submission handler (can we do
++    // this via plugin?).
++  }
++
++  /**
++   * Handle general aspects of rabbit hole form submission.
++   *
++   * (Not specific to node etc.).
++   *
++   * @param array $form
++   *   The form.
++   * @param string|int|object $form_state
++   *   The form state.
++   */
++  public function handleFormSubmit($form, $form_state) {
++    if ($form_state->getValue('rh_is_bundle')) {
++      $entity = NULL;
++      if (method_exists($form_state->getFormObject(), 'getEntity')) {
++        $entity = $form_state->getFormObject()->getEntity();
++      }
++      $allow_override = $form_state->getValue('rh_override')
++        ? BehaviorSettings::OVERRIDE_ALLOW
++        : BehaviorSettings::OVERRIDE_DISALLOW;
++
++      $this->rhBehaviorSettingsManager->saveBehaviorSettings(
++        array(
++          'action' => $form_state->getValue('rh_action'),
++          'allow_override' => $allow_override,
++          'redirect' => $form_state->getValue('rh_redirect')
++          ?: '',
++          'redirect_code' => $form_state->getValue('rh_redirect_response')
++          ?: BehaviorSettings::REDIRECT_NOT_APPLICABLE,
++        ),
++        $form_state->getValue('rh_entity_type'),
++        isset($entity) ? $entity->id() : $form_state->getValue('rh_entity_type')
++      );
++    }
++  }
++
++  /**
++   * Load an array of behaviour options from plugins.
++   *
++   * Load an array of rabbit hole behavior options from plugins in the format
++   * option id => label.
++   *
++   * @return array
++   *   An array of behavior options
++   */
++  protected function loadBehaviorOptions() {
++    $action_options = array();
++    foreach ($this->rhBehaviorPluginManager->getDefinitions() as $id => $def) {
++      $action_options[$id] = $def['label'];
++    }
++    return $action_options;
++  }
++
++  /**
++   * Add additional fields to the form based on behaviors.
++   *
++   * @param array $form
++   *   The form array.
++   * @param array $form_state
++   *   The form state.
++   * @param string $form_id
++   *   The form ID.
++   * @param \Drupal\Core\Entity\Entity|NULL $entity
++   *   The entity whose settings form we are displaying.
++   * @param bool $entity_is_bundle
++   *   Whether the entity is a bundle.
++   * @param \Drupal\Core\Config\ImmutableConfig|NULL $bundle_settings
++   *   The settings for this bundle.
++   */
++  protected function populateExtraBehaviorSections(&$form, $form_state,
++    $form_id, Entity $entity = NULL, $entity_is_bundle = FALSE,
++    ImmutableConfig $bundle_settings = NULL) {
++
++    foreach ($this->rhBehaviorPluginManager->getDefinitions() as $id => $def) {
++      $this->rhBehaviorPluginManager
++        ->createInstance($id)
++        ->settingsForm($form['rabbit_hole'], $form_state, $form_id, $entity,
++          $entity_is_bundle, $bundle_settings);
++    }
++  }
++
++  /**
++   * TODO.
++   */
++  protected function isEntityBundle($entity) {
++    return is_subclass_of($entity,
++      'Drupal\Core\Config\Entity\ConfigEntityBundleBase');
++  }
++
++}
+diff --git a/src/Plugin/RabbitHoleBehaviorPlugin/AccessDenied.php b/src/Plugin/RabbitHoleBehaviorPlugin/AccessDenied.php
+new file mode 100644
+index 0000000..e06dc34
+--- /dev/null
++++ b/src/Plugin/RabbitHoleBehaviorPlugin/AccessDenied.php
+@@ -0,0 +1,31 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin\AccessDenied.
++ */
++
++namespace Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin;
++
++use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
++use Symfony\Component\HttpFoundation\Response;
++use Drupal\Core\Entity\Entity;
++use Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginBase;
++
++/**
++ * Denies access to a page.
++ *
++ * @RabbitHoleBehaviorPlugin(
++ *   id = "access_denied",
++ *   label = @Translation("Access denied")
++ * )
++ */
++class AccessDenied extends RabbitHoleBehaviorPluginBase {
++
++  /**
++   * {@inheritdoc}
++   */
++  public function performAction(Entity $entity, Response $current_response = NULL) {
++    throw new AccessDeniedHttpException();
++  }
++
++}
+diff --git a/src/Plugin/RabbitHoleBehaviorPlugin/DisplayPage.php b/src/Plugin/RabbitHoleBehaviorPlugin/DisplayPage.php
+new file mode 100644
+index 0000000..9e8c8d8
+--- /dev/null
++++ b/src/Plugin/RabbitHoleBehaviorPlugin/DisplayPage.php
+@@ -0,0 +1,22 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin\DisplayPage.
++ */
++
++namespace Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin;
++
++use Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginBase;
++
++/**
++ * Does nothing (displays a page).
++ *
++ * @RabbitHoleBehaviorPlugin(
++ *   id = "display_page",
++ *   label = @Translation("Display the page")
++ * )
++ */
++class DisplayPage extends RabbitHoleBehaviorPluginBase {
++
++  // Empty class: just does RabbitHoleBehaviorBase's defaults, which is nothing.
++}
+diff --git a/src/Plugin/RabbitHoleBehaviorPlugin/PageNotFound.php b/src/Plugin/RabbitHoleBehaviorPlugin/PageNotFound.php
+new file mode 100644
+index 0000000..6a74c82
+--- /dev/null
++++ b/src/Plugin/RabbitHoleBehaviorPlugin/PageNotFound.php
+@@ -0,0 +1,31 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin\PageNotFound.
++ */
++
++namespace Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin;
++
++use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
++use Drupal\Core\Entity\Entity;
++use Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginBase;
++use Symfony\Component\HttpFoundation\Response;
++
++/**
++ * Denies access to a page.
++ *
++ * @RabbitHoleBehaviorPlugin(
++ *   id = "page_not_found",
++ *   label = @Translation("Page not found")
++ * )
++ */
++class PageNotFound extends RabbitHoleBehaviorPluginBase {
++
++  /**
++   * {@inheritdoc}
++   */
++  public function performAction(Entity $entity, Response $current_response = NULL) {
++    throw new NotFoundHttpException();
++  }
++
++}
+diff --git a/src/Plugin/RabbitHoleBehaviorPlugin/PageRedirect.php b/src/Plugin/RabbitHoleBehaviorPlugin/PageRedirect.php
+new file mode 100644
+index 0000000..1f0b73d
+--- /dev/null
++++ b/src/Plugin/RabbitHoleBehaviorPlugin/PageRedirect.php
+@@ -0,0 +1,245 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin\PageRedirect.
++ */
++
++namespace Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin;
++
++use Drupal\Core\Url;
++use Drupal\Core\StringTranslation\StringTranslationTrait;
++use Drupal\Core\Link;
++use Drupal\Core\Entity\Entity;
++use Drupal\Core\Field\BaseFieldDefinition;
++use Drupal\Core\Config\ImmutableConfig;
++use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
++use Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginBase;
++use Drupal\rabbit_hole\Exception\InvalidRedirectResponseException;
++use Drupal\rabbit_hole\BehaviorSettingsManagerInterface;
++use Symfony\Component\HttpFoundation\RedirectResponse;
++use Symfony\Component\HttpFoundation\Response;
++use Symfony\Component\DependencyInjection\ContainerInterface;
++
++/**
++ * Redirects to another page.
++ *
++ * @RabbitHoleBehaviorPlugin(
++ *   id = "page_redirect",
++ *   label = @Translation("Page redirect")
++ * )
++ */
++class PageRedirect extends RabbitHoleBehaviorPluginBase implements ContainerFactoryPluginInterface {
++  use StringTranslationTrait;
++
++  const RABBIT_HOLE_PAGE_REDIRECT_DEFAULT = '';
++  const RABBIT_HOLE_PAGE_REDIRECT_RESPONSE_DEFAULT = 301;
++
++  const REDIRECT_MOVED_PERMANENTLY = 301;
++  const REDIRECT_FOUND = 302;
++  const REDIRECT_SEE_OTHER = 303;
++  const REDIRECT_NOT_MODIFIED = 304;
++  const REDIRECT_USE_PROXY = 305;
++  const REDIRECT_TEMPORARY_REDIRECT = 307;
++
++  /**
++   * The redirect path.
++   *
++   * @var string
++   */
++  private $path;
++
++  /**
++   * The HTTP response code.
++   *
++   * @var string
++   */
++  private $code;
++
++  /**
++   * The behavior settings manager
++   *
++   * Drupal\rabbit_hole\BehaviorSettingsManagerInterface
++   */
++  protected $rhBehaviorSettingsManager;
++
++  /**
++   * {@inheritdoc}
++   */
++  public function __construct(array $configuration, $plugin_id, $plugin_definition,
++    BehaviorSettingsManagerInterface $bsm) {
++    parent::__construct($configuration, $plugin_id, $plugin_definition);
++    $this->rhBehaviorSettingsManager = $bsm;
++  }
++
++  /**
++   *{@inheritdoc}
++   */
++  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
++    return new static (
++      $configuration,
++      $plugin_id,
++      $plugin_definition,
++      $container->get('rabbit_hole.behavior_settings_manager')
++    );
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function performAction(Entity $entity, Response $current_response = NULL) {
++    // Return new RedirectResponse($this->path, $this->code);.
++    $target = $entity->get('rh_redirect')->value;
++    $response_code = NULL;
++
++    $bundle_entity_type = $entity->getEntityType()->getBundleEntityType();
++    $bundle_settings = $this->rhBehaviorSettingsManager
++      ->loadBehaviorSettingsAsConfig($bundle_entity_type,
++          $entity->bundle());
++
++    if (!isset($target)) {
++      $target = $bundle_settings->get('redirect');
++      $response_code = $bundle_settings->get('redirect_code');
++    }
++    else {
++      $response_code = $entity->get('rh_redirect_response')->value;
++    }
++
++    if (substr($target, 0, 4) == '<?php') {
++      // TODO: Evaluate PHP code.
++    }
++
++    switch ($response_code) {
++      case self::REDIRECT_MOVED_PERMANENTLY:
++      case self::REDIRECT_FOUND:
++      case self::REDIRECT_SEE_OTHER:
++      case self::REDIRECT_TEMPORARY_REDIRECT:
++        if ($current_response === NULL) {
++          return new RedirectResponse($target, $response_code);
++        }
++        else {
++          // If a response already exists we don't need to do anything with it.
++          return $current_response;
++        }
++        // TODO: I don't think this is the correct way to handle a 304 response.
++      case self::REDIRECT_NOT_MODIFIED:
++        if ($current_response === NULL) {
++          $not_modified_response = new Response();
++          $not_modified_response->setStatusCode(self::REDIRECT_NOT_MODIFIED);
++          $not_modified_response->headers->set('Location', $target);
++          return $not_modified_response;
++        }
++        else {
++          // If a response already exists we don't need to do anything with it.
++          return $current_response;
++        }
++        // TODO: I have no idea if this is actually the correct way to handle a
++        // 305 response in Symfony/D8. Documentation on it seems a bit sparse.
++      case self::REDIRECT_USE_PROXY:
++        if ($current_response === NULL) {
++          $use_proxy_response = new Response();
++          $use_proxy_response->setStatusCode(self::REDIRECT_USE_PROXY);
++          $use_proxy_response->headers->set('Location', $target);
++          return $use_proxy_response;
++        }
++        else {
++          // If a response already exists we don't need to do anything with it.
++          return $current_response;
++        }
++      default:
++        throw new InvalidRedirectResponseException();
++    }
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function settingsForm(&$form, &$form_state, $form_id, Entity $entity = NULL,
++    $entity_is_bundle = FALSE, ImmutableConfig $bundle_settings = NULL) {
++
++    $redirect = NULL;
++    $redirect_code = NULL;
++
++    if (isset($entity)) {
++      if ($entity_is_bundle) {
++        $redirect = $bundle_settings->get('redirect');
++        $redirect_code = $bundle_settings->get('redirect_code');
++      }
++      else {
++        $redirect = isset($entity->rh_redirect->value)
++          ? $entity->rh_redirect->value
++          : self::RABBIT_HOLE_PAGE_REDIRECT_DEFAULT;
++        $redirect_code = isset($entity->rh_redirect_code->value)
++          ? $entity->rh_redirect_code->value
++          : self::RABBIT_HOLE_PAGE_REDIRECT_RESPONSE_DEFAULT;
++      }
++    }
++    else {
++      $redirect = NULL;
++      $redirect_code = NULL;
++    }
++
++    $form['rabbit_hole']['redirect'] = array(
++      '#type' => 'fieldset',
++      '#title' => t('Redirect settings'),
++      '#attributes' => array('class' => array('rabbit-hole-redirect-options')),
++      '#states' => array(
++        'visible' => array(
++          ':input[name="rh_action"]' => array('value' => $this->getPluginId()),
++        ),
++      ),
++    );
++
++    // Get the default value for the redirect path.
++    // Build the descriptive text. Add some help text for PHP, if the user has
++    // the permission to use PHP for evaluation.
++    $description = array();
++    $description[] = t('Enter the relative path or the full URL that the user should get redirected to. Query strings and fragments are supported, such as %example.', array('%example' => 'http://www.example.com/?query=value#fragment'));
++    $description[] = t('You may enter tokens in this field.');
++
++    $form['rabbit_hole']['redirect']['rh_redirect'] = array(
++      '#type' => /*rabbit_hole_access_php($module) ? 'textarea' :*/ 'textfield',
++      '#title' => t('Redirect path'),
++      '#default_value' => $redirect,
++      '#description' => '<p>' . implode('</p><p>', $description) . '</p>',
++      '#attributes' => array('class' => array('rabbit-hole-redirect-setting')),
++      '#rows' => substr_count($redirect, "\r\n") + 2,
++    );
++    // Display a list of tokens if the Token module is enabled.
++    // Add the redirect response setting.
++    $form['rabbit_hole']['redirect']['rh_redirect_response'] = array(
++      '#type' => 'select',
++      '#title' => $this->t('Response code'),
++      '#options' => array(
++        301 => $this->t('301 (Moved Permanently)'),
++        302 => $this->t('302 (Found)'),
++        303 => $this->t('303 (See other)'),
++        304 => $this->t('304 (Not modified)'),
++        305 => $this->t('305 (Use proxy)'),
++        307 => $this->t('307 (Temporary redirect)'),
++      ),
++      '#default_value' => $redirect_code,
++      '#description' => $this->t('The response code that should be sent to the users browser. Follow @link for more information on response codes.',
++        array('@link' => Link::fromTextAndUrl(t('this link'), Url::fromUri('http://api.drupal.org/api/drupal/includes--common.inc/function/drupal_goto/7'))->toString())),
++      '#attributes' => array('class' => array('rabbit-hole-redirect-response-setting')),
++    );
++
++    // If the redirect path contains PHP, and the user doesn't have permission
++    // to use PHP for evaluation, we'll disable access to the path setting, and
++    // print some helpful information about what's going on.
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function alterExtraFields(array &$fields) {
++    $fields['rh_redirect'] = BaseFieldDefinition::create('string')
++      ->setName('rh_redirect')
++      ->setLabel($this->t('Rabbit Hole redirect path or code'))
++      ->setDescription($this->t('The path to where the user should get redirected to.'));
++    $fields['rh_redirect_response'] = BaseFieldDefinition::create('integer')
++      ->setName('rh_redirect_response')
++      ->setLabel($this->t('Rabbit Hole redirect response code'))
++      ->setDescription($this->t('Specifies the HTTP response code that should be used when perform a redirect.'));
++  }
++
++}
+diff --git a/src/Plugin/RabbitHoleBehaviorPluginBase.php b/src/Plugin/RabbitHoleBehaviorPluginBase.php
+new file mode 100644
+index 0000000..b0adb44
+--- /dev/null
++++ b/src/Plugin/RabbitHoleBehaviorPluginBase.php
+@@ -0,0 +1,54 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginBase.
++ */
++
++namespace Drupal\rabbit_hole\Plugin;
++
++use Drupal\Core\Entity\Entity;
++use Drupal\Core\Config\ImmutableConfig;
++use Drupal\Component\Plugin\PluginBase;
++
++/**
++ * Base class for Rabbit hole behavior plugin plugins.
++ */
++abstract class RabbitHoleBehaviorPluginBase extends PluginBase implements RabbitHoleBehaviorPluginInterface {
++
++  /**
++   * {@inheritdoc}
++   */
++  public function performAction(Entity $entity) {
++    // Perform no action.
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function settingsForm(&$form, &$form_state, $form_id, Entity $entity = NULL,
++    $entity_is_bundle = FALSE, ImmutableConfig $bundle_settings = NULL) {
++    // Present no settings form.
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function settingsFormHandleSubmit(&$form, &$form_state) {
++    // No extra action to handle submission by default.
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function alterExtraFields(array &$fields) {
++    // Don't change the fields by default.
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function usesResponse() {
++    return RabbitHoleBehaviorPluginInterface::USES_RESPONSE_NEVER;
++  }
++
++}
+diff --git a/src/Plugin/RabbitHoleBehaviorPluginInterface.php b/src/Plugin/RabbitHoleBehaviorPluginInterface.php
+new file mode 100644
+index 0000000..5ed5444
+--- /dev/null
++++ b/src/Plugin/RabbitHoleBehaviorPluginInterface.php
+@@ -0,0 +1,76 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginInterface.
++ */
++
++namespace Drupal\rabbit_hole\Plugin;
++
++use Drupal\Core\Entity\Entity;
++use Drupal\Core\Config\ImmutableConfig;
++use Drupal\Component\Plugin\PluginInspectionInterface;
++
++/**
++ * Defines an interface for Rabbit hole behavior plugin plugins.
++ */
++interface RabbitHoleBehaviorPluginInterface extends PluginInspectionInterface {
++
++  const USES_RESPONSE_NEVER = 0;
++  const USES_RESPONSE_SOMETIMES = 1;
++  const USES_RESPONSE_ALWAYS = 2;
++
++  /**
++   * Perform the rabbit hole action.
++   *
++   * @param Entity $entity
++   *   The entity the action is being performed on.
++   */
++  public function performAction(Entity $entity);
++
++  /**
++   * Return a settings form for the rabbit hole action.
++   *
++   * @param array &$form
++   *   The form array to modify.
++   * @param array &$form_state
++   *   The form state array to modify.
++   * @param string $form_id
++   *   The form ID.
++   * @param Entity|null $entity
++   *   The entity used by the form.
++   * @param bool $entity_is_bundle
++   *   Whether the entity is a bundle.
++   * @param ImmutableConfig|null $bundle_settings
++   *   The behavior settings for the bundle of the entity (or the entity itself,
++   *   if it is a bundle).
++   */
++  public function settingsForm(&$form, &$form_state, $form_id, Entity $entity = NULL,
++    $entity_is_bundle = FALSE, ImmutableConfig $bundle_settings = NULL);
++
++  /**
++   * Handle submission of the settings form for this plugin.
++   */
++  public function settingsFormHandleSubmit(&$form, &$form_state);
++
++  /**
++   * Add to or adjust the fields added by rabbit hole.
++   *
++   * @param array $fields
++   *   The array of fields to be altered.
++   */
++  public function alterExtraFields(array &$fields);
++
++  /**
++   * Get whether this plugin uses a response to perform its action.
++   *
++   * Override this to return one of USES_RESPONSE_NEVER,
++   * USES_RESPONSE_SOMETIMES, or USES_RESPONSE_ALWAYS to indicate whether
++   * performAction() should be invoked only when a null response is given,
++   * regardless of whether there is a response (it'll figure out what to do with
++   * or without on its own), or only when a non-null response is given. Defaults
++   * to returning USES_RESPONSE_NEVER.
++   */
++  public function usesResponse();
++
++}
+diff --git a/src/Plugin/RabbitHoleBehaviorPluginManager.php b/src/Plugin/RabbitHoleBehaviorPluginManager.php
+new file mode 100644
+index 0000000..333b71c
+--- /dev/null
++++ b/src/Plugin/RabbitHoleBehaviorPluginManager.php
+@@ -0,0 +1,36 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager.
++ */
++
++namespace Drupal\rabbit_hole\Plugin;
++
++use Drupal\Core\Plugin\DefaultPluginManager;
++use Drupal\Core\Cache\CacheBackendInterface;
++use Drupal\Core\Extension\ModuleHandlerInterface;
++
++/**
++ * Provides the Rabbit hole behavior plugin plugin manager.
++ */
++class RabbitHoleBehaviorPluginManager extends DefaultPluginManager {
++
++  /**
++   * Constructor for RabbitHoleBehaviorPluginManager objects.
++   *
++   * @param \Traversable $namespaces
++   *   An object that implements \Traversable which contains the root paths
++   *   keyed by the corresponding namespace to look for plugin implementations.
++   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
++   *   Cache backend instance to use.
++   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
++   *   The module handler to invoke the alter hook with.
++   */
++  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
++    parent::__construct('Plugin/RabbitHoleBehaviorPlugin', $namespaces, $module_handler, 'Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginInterface', 'Drupal\rabbit_hole\Annotation\RabbitHoleBehaviorPlugin');
++
++    $this->alterInfo('rabbit_hole_rabbit_hole_behavior_plugin_info');
++    $this->setCacheBackend($cache_backend, 'rabbit_hole_rabbit_hole_behavior_plugin_plugins');
++  }
++
++}
+diff --git a/src/Plugin/RabbitHoleEntityPluginBase.php b/src/Plugin/RabbitHoleEntityPluginBase.php
+new file mode 100644
+index 0000000..39b6a35
+--- /dev/null
++++ b/src/Plugin/RabbitHoleEntityPluginBase.php
+@@ -0,0 +1,45 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginBase.
++ */
++
++namespace Drupal\rabbit_hole\Plugin;
++
++use Drupal\Component\Plugin\PluginBase;
++use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginInterface;
++
++/**
++ * Base class for Rabbit hole entity plugin plugins.
++ */
++abstract class RabbitHoleEntityPluginBase extends PluginBase implements RabbitHoleEntityPluginInterface {
++  /**
++   * {@inheritdoc}
++   */
++  public function getFormSubmitHandlerAttachLocations() {
++    return array(array('actions', 'submit', '#submit'));
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getBundleFormSubmitHandlerAttachLocations() {
++    return array(array('actions', 'submit', '#submit'));
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getGlobalConfigFormId() {
++    return NULL;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function getGlobalFormSubmitHandlerAttachLocations() {
++    return array(array('actions', 'submit', '#submit'));
++  }
++
++}
+diff --git a/src/Plugin/RabbitHoleEntityPluginInterface.php b/src/Plugin/RabbitHoleEntityPluginInterface.php
+new file mode 100644
+index 0000000..4a9d08a
+--- /dev/null
++++ b/src/Plugin/RabbitHoleEntityPluginInterface.php
+@@ -0,0 +1,64 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginInterface.
++ */
++
++namespace Drupal\rabbit_hole\Plugin;
++
++use Drupal\Component\Plugin\PluginInspectionInterface;
++
++/**
++ * Defines an interface for Rabbit hole entity plugin plugins.
++ */
++interface RabbitHoleEntityPluginInterface extends PluginInspectionInterface {
++
++  /**
++   * Return locations to attach submit handlers to entities.
++   *
++   * This should return an array of arrays, e.g.:
++   * array(
++   *   array('actions', 'submit', '#publish'),
++   *   array('actions', 'publish', '#submit'),
++   * ).
++   */
++  public function getFormSubmitHandlerAttachLocations();
++
++  /**
++   * Return locations to attach submit handlers to entity bundles.
++   *
++   * This should return an array of arrays, e.g.:
++   * array(
++   *   array('actions', 'submit', '#publish'),
++   *   array('actions', 'publish', '#submit'),
++   * ).
++   *
++   * @return array
++   *   A multidimensional array.
++   */
++  public function getBundleFormSubmitHandlerAttachLocations();
++
++  /**
++   * Return the form ID of the config form for this plugin's entity.
++   *
++   * Return the form ID of the global config form for the entity targeted by
++   * this plugin.
++   *
++   * @return string
++   *   The form ID of the global config form.
++   */
++  public function getGlobalConfigFormId();
++
++  /**
++   * Return locations to attach submit handlers to the global config form.
++   *
++   * This should return an array of arrays, e.g.:
++   * array(
++   *   array('actions', 'submit', '#publish'),
++   *   array('actions', 'publish', '#submit'),
++   * ).
++   */
++  public function getGlobalFormSubmitHandlerAttachLocations();
++
++}
+diff --git a/src/Plugin/RabbitHoleEntityPluginManager.php b/src/Plugin/RabbitHoleEntityPluginManager.php
+new file mode 100644
+index 0000000..707eb90
+--- /dev/null
++++ b/src/Plugin/RabbitHoleEntityPluginManager.php
+@@ -0,0 +1,121 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager.
++ */
++
++namespace Drupal\rabbit_hole\Plugin;
++
++use Drupal\Core\Plugin\DefaultPluginManager;
++use Drupal\Core\Cache\CacheBackendInterface;
++use Drupal\Core\Extension\ModuleHandlerInterface;
++use Drupal\Core\Entity\EntityTypeManagerInterface;
++
++/**
++ * Provides the Rabbit hole entity plugin plugin manager.
++ */
++class RabbitHoleEntityPluginManager extends DefaultPluginManager {
++
++  /**
++   * Drupal\Core\Entity\EntityTypeManagerInterface.
++   */
++  private $etm;
++
++  /**
++   * Constructor for RabbitHoleEntityPluginManager objects.
++   *
++   * @param \Traversable $namespaces
++   *   An object that implements \Traversable which contains the root paths
++   *   keyed by the corresponding namespace to look for plugin implementations.
++   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
++   *   Cache backend instance to use.
++   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
++   *   The module handler to invoke the alter hook with.
++   */
++  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler,
++    EntityTypeManagerInterface $etm) {
++    parent::__construct('Plugin/RabbitHoleEntityPlugin', $namespaces, $module_handler, 'Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginInterface', 'Drupal\rabbit_hole\Annotation\RabbitHoleEntityPlugin');
++
++    $this->alterInfo('rabbit_hole_rabbit_hole_entity_plugin_info');
++    $this->setCacheBackend($cache_backend, 'rabbit_hole_rabbit_hole_entity_plugin_plugins');
++
++    $this->etm = $etm;
++  }
++
++  /**
++   * Create an instance of the first plugin found with string id $entity_type.
++   *
++   * Create an instance of the first plugin found supporting the entity type
++   * with string id $entity_type.
++   *
++   * @param string $entity_type
++   *   The string ID of the entity type.
++   *
++   * @return Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginInterface
++   *   The plugin.
++   */
++  public function createInstanceByEntityType($entity_type) {
++    $plugin_ids = array_keys($this->loadDefinitionsByEntityType($entity_type));
++    return $this->createInstance($plugin_ids[0]);
++  }
++
++  /**
++   * Load plugins implementing entity with id $entity_type.
++   *
++   * @param string $entity_type
++   *   The string ID of the entity type.
++   *
++   * @return array
++   *   An array of plugin definitions for the entity type with ID $entity_type.
++   */
++  public function loadDefinitionsByEntityType($entity_type) {
++    return array_filter($this->getDefinitions(), function($var) use ($entity_type) {
++      return $var['entityType'] == $entity_type;
++    });
++  }
++
++  /**
++   * Load the string IDs for the supported entity types.
++   *
++   * @return array
++   *   An array of entity type ID strings.
++   */
++  public function loadSupportedEntityTypes() {
++    return array_values(array_map(function($var) {
++      return $var['entityType'];
++    }, $this->getDefinitions()));
++  }
++
++  /**
++   * Load the string IDs for the supported bundle entity types.
++   *
++   * @return array
++   *   An array of entity type ID strings.
++   */
++  public function loadSupportedBundleEntityTypes() {
++    return array_values(array_map(function($var) {
++      return $this->etm->getStorage($var['entityType'])
++        ->getEntityType()->getBundleEntityType();
++    }, $this->getDefinitions()));
++  }
++
++  /**
++   * Load the string IDs for the global configuration forms for entity types.
++   *
++   * @return array
++   *   An array of entity types and form ID strings in the form
++   *   form_id => entity_type.
++   */
++  public function loadSupportedGlobalForms() {
++    $result = array();
++    foreach ($this->getDefinitions() as $key => $def) {
++      $form_id = $this->createInstance($key)->getGlobalConfigFormId();
++      if (isset($form_id)) {
++        $result[$form_id] = $def['entityType'];
++      }
++    }
++    return $result;
++  }
++
++}
+diff --git a/src/RabbitHolePermissionGenerator.php b/src/RabbitHolePermissionGenerator.php
+new file mode 100644
+index 0000000..00f68c4
+--- /dev/null
++++ b/src/RabbitHolePermissionGenerator.php
+@@ -0,0 +1,75 @@
++<?php
++
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\RabbitHoleGeneratedPermissions.
++ */
++
++namespace Drupal\rabbit_hole;
++
++use Symfony\Component\DependencyInjection\ContainerInterface;
++use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
++use Drupal\Core\Entity\EntityTypeManager;
++use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager;
++use Drupal\Core\StringTranslation\StringTranslationTrait;
++use Drupal\Core\StringTranslation\TranslationInterface;
++
++class RabbitHolePermissionGenerator implements ContainerInjectionInterface {
++  use StringTranslationTrait;
++
++  private $entityTypeManager = NULL;
++  private $rhEntityPluginManager = NULL;
++
++  /**
++   * Constructor.
++   */
++  public function __construct(
++    EntityTypeManager $etm,
++    RabbitHoleEntityPluginManager $entity_plugin_manager,
++    TranslationInterface $translation) {
++
++    $this->entityTypeManager = $etm;
++    $this->rhEntityPluginManager = $entity_plugin_manager;
++    $this->stringTranslation = $translation;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function create(ContainerInterface $container) {
++    return new static(
++      $container->get('entity_type.manager'),
++      $container->get('plugin.manager.rabbit_hole_entity_plugin'),
++      $container->get('string_translation')
++    );
++  }
++
++  /**
++   * Return an array of per-entity rabbit hole permissions
++   * @return array
++   *  An array of permissions
++   */
++  public function permissions() {
++    $permissions = [];
++
++    foreach ($this->rhEntityPluginManager->getDefinitions() as $def) {
++      $entity_type = $this->entityTypeManager
++              ->getStorage($def['entityType'])
++              ->getEntityType();
++      $permissions += array(
++          'rabbit hole administer ' . $def['entityType'] => array(
++              'title' => $this->t(
++                      'Administer Rabbit Hole settings for %entity_type',
++                      array('%entity_type' => $entity_type->getLabel())),
++          ),
++          'rabbit hole bypass ' . $def['entityType'] => array(
++              'title' => $this->t(
++                      'Bypass Rabbit Hole action for %entity_type',
++                      array('%entity_type' => $entity_type->getLabel())),
++          )
++      );
++    }
++
++    return $permissions;
++  }
++}
+\ No newline at end of file
+diff --git a/src/Tests/RabbitHoleBehaviorPluginTest.php b/src/Tests/RabbitHoleBehaviorPluginTest.php
+new file mode 100644
+index 0000000..13c3ab3
+--- /dev/null
++++ b/src/Tests/RabbitHoleBehaviorPluginTest.php
+@@ -0,0 +1,142 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Tests\RabbitHoleBehaviorPluginTest.
++ */
++
++namespace Drupal\rabbit_hole\Tests;
++
++use Drupal\system\Tests\Plugin\PluginTestBase;
++
++/**
++ * Test the functionality of the RabbitHoleBehavior plugin.
++ *
++ * @group rabbit_hole
++ */
++class RabbitHoleBehaviorPluginTest extends PluginTestBase {
++
++  /**
++   * Modules to enable.
++   *
++   * @var array
++   */
++  public static $modules = array('rabbit_hole');
++
++  /**
++   * The plugin manager.
++   *
++   * @var \Drupal\Component\Plugin\PluginManagerInterface
++   */
++  private $manager;
++
++  /**
++   * {@inheritdoc}
++   */
++  protected function setUp() {
++    parent::setUp();
++    $this->manager = $this->container->get('plugin.manager.rabbit_hole_behavior_plugin');
++  }
++
++  /**
++   * Test the plugin manager.
++   */
++  public function testPluginManager() {
++    // Check that we can get a behavior plugin.
++    $this->assertNotNull($this->manager, 'Drupal plugin service returned a rabbit hole behavior service.');
++
++    // Check that the behavior plugin manager is the type we expect.
++    $this->assertEqual(get_class($this->manager), 'Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager');
++
++    // Check the rabbit_hole module defines the expected number of behaviors.
++    $behaviors = $this->manager->getDefinitions();
++    $this->assertEqual(count($behaviors), 4, 'There are 4 behaviors.');
++
++    // Check that the plugins defined by the rabbit_hole module are in the list
++    // of plugins.
++    $this->assertTrue($this->manager->hasDefinition('access_denied'), 'There is an access denied plugin');
++    $this->assertTrue(isset($behaviors['access_denied']['label']), 'The access denied plugin has a label');
++    $this->assertTrue($this->manager->hasDefinition('display_page'), 'There is a display the page plugin');
++    $this->assertTrue(isset($behaviors['display_page']['label']), 'The display the page plugin has a label');
++    $this->assertTrue($this->manager->hasDefinition('page_not_found'), 'There is a page not found plugin');
++    $this->assertTrue(isset($behaviors['page_not_found']['label']), 'The page not found plugin has a label');
++    $this->assertTrue($this->manager->hasDefinition('page_redirect'), 'There is a page redirect plugin');
++    $this->assertTrue(isset($behaviors['page_redirect']['label']), 'The page redirect plugin has a label');
++  }
++
++  /**
++   * Test the access denied plugin.
++   */
++  public function testAccessDeniedPlugin() {
++    // Check we can create an instance of the plugin.
++    $plugin = $this->manager->createInstance('access_denied', ['of' => 'configuration values']);
++    $this->assertEqual(get_class($plugin), 'Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin\AccessDenied', 'The access denied plugin is the correct type.');
++
++    // Test the settings form.
++    $form = $form_state = [];
++    $plugin->settingsForm($form, $form_state, 'test');
++    $this->assertEqual($form, [], 'Access denied plugin has no settings form.');
++    $this->assertEqual($form_state, [], 'Access denied plugin settings form state was not changed.');
++
++    // Check that the plugin performs the expected action.
++    // TODO: Check that $plugin->performAction() throws a
++    // \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException.
++  }
++
++  /**
++   * Test the display page plugin.
++   */
++  public function testDisplayPagePlugin() {
++    // Check we can create an instance of the plugin.
++    $plugin = $this->manager->createInstance('display_page', ['of' => 'configuration values']);
++    $this->assertEqual(get_class($plugin), 'Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin\DisplayPage', 'The display page plugin is the correct type.');
++
++    // Test the settings form.
++    $form = $form_state = [];
++    $plugin->settingsForm($form, $form_state, 'test');
++    $this->assertEqual($form, [], 'Display page plugin has no settings form.');
++    $this->assertEqual($form_state, [], 'Display page plugin settings form state was not changed.');
++
++    // Check that the plugin performs the expected action.
++    // TODO: Check that $plugin->performAction() throws nothing and returns
++    // nothing.
++  }
++
++  /**
++   * Test the page not found plugin.
++   */
++  public function testPageNotFoundPlugin() {
++    // Check we can create an instance of the plugin.
++    $plugin = $this->manager->createInstance('page_not_found', ['of' => 'configuration values']);
++    $this->assertEqual(get_class($plugin), 'Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin\PageNotFound', 'The page not found plugin is the correct type.');
++
++    // Test the settings form.
++    $form = $form_state = [];
++    $plugin->settingsForm($form, $form_state, 'test');
++    $this->assertEqual($form, [], 'Page not found plugin has no settings form.');
++    $this->assertEqual($form_state, [], 'Page not found plugin settings form state was not changed.');
++
++    // Check that the plugin performs the expected action.
++    // TODO: Check that $plugin->performAction() throws a
++    // \Symfony\Component\HttpKernel\Exception\NotFoundHttpException.
++  }
++
++  /**
++   * Test the page redirect plugin.
++   */
++  public function testPageRedirectPlugin() {
++    // Check we can create an instance of the plugin.
++    $plugin = $this->manager->createInstance('page_redirect', ['of' => 'configuration values']);
++    $this->assertEqual(get_class($plugin), 'Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin\PageRedirect', 'The page redirect plugin is the correct type.');
++
++    // Test the settings form.
++    $form = $form_state = [];
++    $plugin->settingsForm($form, $form_state, 'test');
++    $this->assertNotEqual($form, [], 'Page redirect plugin defines a settings form.');
++    $this->assertEqual($form_state, [], 'Page redirect plugin form state was not changed.');
++
++    // Check that the plugin performs the expected action.
++    // TODO: Check that $plugin->performAction() does what it's supposed to,
++    // whatever that is.
++  }
++
++}
+diff --git a/src/Tests/RabbitHoleBehaviorSettingsEntityMethodsTest.php b/src/Tests/RabbitHoleBehaviorSettingsEntityMethodsTest.php
+new file mode 100644
+index 0000000..01e4830
+--- /dev/null
++++ b/src/Tests/RabbitHoleBehaviorSettingsEntityMethodsTest.php
+@@ -0,0 +1,185 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Tests\RabbitHoleBehaviorSettingsEntityMethodsTest.
++ */
++
++namespace Drupal\rabbit_hole\Tests;
++
++use Drupal\simpletest\WebTestBase;
++use Drupal\rabbit_hole\Entity\BehaviorSettings;
++use Drupal\rabbit_hole\Exception\InvalidBehaviorSettingException;
++
++/**
++ * Test the functionality of the rabbit hole form additions to the node form.
++ *
++ * @group rabbit_hole
++ *
++ * TODO: Test that creating an entity with an invalid redirect code fails.
++ * TODO: Test that creating an entity with redirect settings when the action
++ * type is not redirect fails.
++ *
++ * Note: Currently config entity constructors don't use setters - see
++ * https://www.drupal.org/node/2399999.
++ */
++class RabbitHoleBehaviorSettingsEntityMethodsTest extends WebTestBase {
++  public static $modules = array('rabbit_hole');
++
++  /**
++   * Drupal\Core\Config\ConfigFactory definition.
++   *
++   * @var Drupal\Core\Config\ConfigFactory
++   */
++  protected $configFactory;
++
++  /**
++   * {@inheritdoc}
++   */
++  protected function setUp() {
++    parent::setUp();
++    $this->configFactory = $this->container->get('config.factory');
++  }
++
++  /**
++   * Test creating a BehaviorSettings entity and loading it as config.
++   */
++  public function testCreateEntity() {
++    $action = 'page_not_found';
++    $redirect_code = BehaviorSettings::REDIRECT_NOT_APPLICABLE;
++    $redirect = '/';
++    $allow_override = BehaviorSettings::OVERRIDE_ALLOW;
++
++    $entity = BehaviorSettings::create(
++      array(
++        'id' => 'test_behavior_settings',
++        'action' => $action,
++        'allow_override' => $allow_override,
++        'redirect_code' => $redirect_code,
++        'redirect' => $redirect,
++      )
++    );
++    $entity->save();
++    $config_entity = $this->configFactory
++      ->get('rabbit_hole.behavior_settings.test_behavior_settings');
++
++    $this->assertEqual($action, $config_entity->get('action'));
++    $this->assertEqual($redirect_code, $config_entity->get('redirect_code'));
++    $this->assertEqual($redirect, $config_entity->get('redirect'));
++    $this->assertEqual($allow_override, $config_entity->get('allow_override'));
++  }
++
++  /**
++   * Test that setAction() works as expected.
++   */
++  public function testSetAction() {
++    $entity = $this->createGenericTestEntity();
++    $action = 'page_not_found';
++    $entity->setAction($action);
++    $this->assertTrue($action, $entity->getAction());
++  }
++
++  /**
++   * Test that setAllowOverride works as expected.
++   *
++   * Test that setAllowOverride works as expected (including throwing an
++   * exception if an invalid value is passed).
++   */
++  public function testSetAllowOverride() {
++    $entity = $this->createGenericTestEntity();
++
++    $this->testBehaviorSettingExceptionThrown($entity,
++      'setAllowOverride', array('some non-bool value'), __METHOD__);
++    $entity->setAllowOverride(TRUE);
++    $this->assertEqual(TRUE, $entity->getAllowOverride());
++    $entity->setAllowOverride(FALSE);
++    $this->assertEqual(FALSE, $entity->getAllowOverride());
++  }
++
++  /**
++   * Test that setRedirectCode works as expected.
++   *
++   * Test that setRedirectCode works as expected (including throwing an
++   * exception for invalid codes and settings codes when action type is wrong).
++   */
++  public function testSetRedirectCode() {
++    $entity = $this->createGenericTestEntity();
++
++    $entity->setAction('display_page');
++    $this->testBehaviorSettingExceptionThrown($entity, 'setRedirectCode',
++      array(BehaviorSettings::REDIRECT_FOUND), __METHOD__);
++
++    $entity->setAction('redirect');
++
++    $this->testBehaviorSettingExceptionThrown($entity, 'setRedirectCode',
++      array(209458253), __METHOD__);
++
++    $entity->setRedirectCode(BehaviorSettings::REDIRECT_FOUND);
++    $this->assertEqual(BehaviorSettings::REDIRECT_FOUND,
++      $entity->getRedirectCode());
++
++    $entity->setRedirectCode(BehaviorSettings::REDIRECT_MOVED_PERMANENTLY);
++    $this->assertEqual(BehaviorSettings::REDIRECT_MOVED_PERMANENTLY,
++      $entity->getRedirectCode());
++  }
++
++  /**
++   * Test that setRedirectPath works as expected.
++   *
++   * Test that setRedirectPath works as expected (including throwing an
++   * exception for invalid codes and settings codes when action type is wrong).
++   */
++  public function testSetRedirectPath() {
++    $entity = $this->createGenericTestEntity();
++
++    $entity->setAction('display_page');
++    $this->testBehaviorSettingExceptionThrown($entity, 'setRedirectPath',
++      array('/'), __METHOD__);
++
++    $entity->setAction('redirect');
++    $path = '/somepage';
++    $entity->setRedirectPath($path);
++    $this->assertEqual($path, $entity->getRedirectPath());
++  }
++
++  /**
++   * Create a generic test BehaviorSettings entity.
++   */
++  private function createGenericTestEntity() {
++    return BehaviorSettings::create(
++      array(
++        'id' => 'test_behavior_settings',
++        'action' => 'access_denied',
++        'redirect_code' => BehaviorSettings::REDIRECT_NOT_APPLICABLE,
++        'redirect' => NULL,
++      )
++    );
++  }
++
++  /**
++   * Test that BehaviorSettingExceptions are thrown when we expect them to.
++   *
++   * Test that a BehaviorSettingException gets thrown when $entity executes
++   * $method with $args. This uses call_user_func internally.
++   *
++   * @param BehaviorSettings $entity
++   *   The BehaviorSettings entity.
++   * @param string $method
++   *   The method to call.
++   * @param array $args
++   *   The arguments to pass to the method.
++   * @param string $parent
++   *   The name of the method which calls this method.
++   */
++  private function testBehaviorSettingExceptionThrown(BehaviorSettings $entity, $method, array $args, $parent) {
++    $exception_was_thrown = FALSE;
++    try {
++      call_user_func(array($entity, $method), $args);
++    }
++    catch (InvalidBehaviorSettingException $ex) {
++      $exception_was_thrown = TRUE;
++    }
++    $this->assert($exception_was_thrown, 'Exception thrown executing '
++      . $method . ', called from ' . $parent);
++  }
++
++}
+diff --git a/src/Tests/RabbitHoleBehaviorSettingsTest.php b/src/Tests/RabbitHoleBehaviorSettingsTest.php
+new file mode 100644
+index 0000000..42dd0a8
+--- /dev/null
++++ b/src/Tests/RabbitHoleBehaviorSettingsTest.php
+@@ -0,0 +1,197 @@
++<?php
++/**
++ * @file
++ * Contains \Drupal\rabbit_hole\Tests\RabbitHoleBehaviorSettingsTest.
++ */
++
++namespace Drupal\rabbit_hole\Tests;
++
++use Drupal\simpletest\WebTestBase;
++use Drupal\node\Entity\Node;
++use Drupal\rabbit_hole\Entity\BehaviorSettings;
++
++/**
++ * Test the RabbitHoleBehaviorSettings configuration entity functionality.
++ *
++ * @group rabbit_hole
++ */
++class RabbitHoleBehaviorSettingsTest extends WebTestBase {
++  const DEFAULT_TEST_ENTITY = 'node';
++  const DEFAULT_ACTION = 'bundle_default';
++  const DEFAULT_OVERRIDE = BehaviorSettings::OVERRIDE_ALLOW;
++  const DEFAULT_REDIRECT_CODE = BehaviorSettings::REDIRECT_NOT_APPLICABLE;
++  const DEFAULT_BUNDLE_ACTION = 'display_page';
++  const DEFAULT_BUNDLE_OVERRIDE = BehaviorSettings::OVERRIDE_ALLOW;
++  const DEFAULT_BUNDLE_REDIRECT_CODE = BehaviorSettings::REDIRECT_NOT_APPLICABLE;
++
++  /**
++   * Modules to enable.
++   *
++   * @var array
++   */
++  public static $modules = array('rabbit_hole', self::DEFAULT_TEST_ENTITY);
++
++  private $behaviorSettingsManager;
++
++  private $configFactory;
++
++  private $testNodeType;
++
++  private $testNode;
++
++  /**
++   * {@inheritdoc}
++   */
++  protected function setUp() {
++    parent::setUp();
++    $this->configFactory = $this->container->get('config.factory');
++    $this->behaviorSettingsManager = $this->container
++      ->get('rabbit_hole.behavior_settings_manager');
++    $this->testNodeType = $this->generateTestNodeType();
++    $this->testNode = $this->generateTestNode();
++  }
++
++  /**
++   * Test that a BehaviorSettings can be found and contains correct values.
++   *
++   * Test that a saved BehaviorSettings entity can be found by the config system
++   * and contains the correct values.
++   */
++  public function testSettings() {
++    $this->saveAndTestExpectedValues(self::DEFAULT_ACTION,
++      __METHOD__, '', 'test_behavior_settings');
++  }
++
++  /**
++   * Test that the default bundle settings exist and have the expected values.
++   */
++  public function testBundleSettingsDefault() {
++    $settings = \Drupal::config('rabbit_hole.behavior_settings.default');
++    $this->assertEqual($settings->get('action'),
++      self::DEFAULT_BUNDLE_ACTION,
++      'Unexpected default action');
++    $this->assertEqual($settings->get('allow_override'),
++      self::DEFAULT_BUNDLE_OVERRIDE, 'Unexpected default override');
++    $this->assertEqual($settings->get('redirect_code'),
++      self::DEFAULT_BUNDLE_REDIRECT_CODE, 'Unexpected default redirect');
++  }
++
++  /**
++   * Test that a BehaviourSettings can be given an ID and found later.
++   *
++   * Test that a saved BehaviourSettings entity can be given an ID based on
++   * a generated bundle (a NodeType in this case) and be found based on that ID.
++   */
++  public function testBundleSettings() {
++    $this->createTestNodeType();
++    $this->saveAndTestExpectedValues('page_not_found', __METHOD__,
++      self::DEFAULT_TEST_ENTITY, $this->testNodeType->id());
++    $this->deleteTestNodeType();
++  }
++
++  /**
++   * Test loading behavior settings for a nonexistent bundle returns defaults.
++   */
++  public function testLoadBundleSettingsWithDefault() {
++    // We search for a bundle that doesn't exist (named from a UUID) expecting
++    // to receive the default value.
++    $action = $this->behaviorSettingsManager->loadBehaviorSettingsAsConfig(
++      self::DEFAULT_TEST_ENTITY,
++      'f4515736-cfa0-4e38-b3ed-1306f56bd2a1')->get('action');
++    $this->assertEqual(self::DEFAULT_BUNDLE_ACTION, $action,
++      'Unexpected default action');
++  }
++
++  /**
++   * Test loading editable for nonexistent behavior settings returns NULL.
++   */
++  public function testLoadNullEditable() {
++    $editable = $this->behaviorSettingsManager
++      ->loadBehaviorSettingsAsEditableConfig(self::DEFAULT_TEST_ENTITY,
++          '6b92ed36-f17f-4799-97d0-ae1801ed37ff');
++    $this->assertEqual($editable, NULL);
++  }
++
++  /**
++   * Helper function to test saving and confirming config.
++   */
++  private function saveAndTestExpectedValues($expected_action,
++    $calling_method, $entity_type_label = '', $entity_id = NULL) {
++
++    // Delete key if it already exists.
++    $editable = $this->behaviorSettingsManager->loadBehaviorSettingsAsEditableConfig(
++      $entity_type_label, $entity_id);
++    if (isset($editable)) {
++      $editable->delete();
++    }
++
++    $this->behaviorSettingsManager->saveBehaviorSettings(array(
++      'action' => $expected_action,
++      'allow_override' => 0,
++      'redirect_code' => 0,
++      'redirect' => '',
++    ), $entity_type_label, $entity_id);
++    $action = $this->behaviorSettingsManager->loadBehaviorSettingsAsConfig(
++      $entity_type_label, $entity_id)->get('action');
++    $this->assertEqual($action, $expected_action, 'Unexpected action '
++      . ' (called from ' . $calling_method . ')');
++
++    // Clean up the entity afterwards.
++    $this->behaviorSettingsManager->loadBehaviorSettingsAsEditableConfig(
++      $entity_type_label, $entity_id)->delete();
++  }
++
++  /**
++   * Helper function to generate the test node type.
++   */
++  private function generateTestNodeType() {
++    return \entity_create('node_type',
++      array(
++        'type' => 'test_behavior_settings_node_type',
++        'name' => 'Test Behavior Settings Node Type',
++      )
++    );
++  }
++
++  /**
++   * Helper function to generate the test node.
++   */
++  private function generateTestNode() {
++    return Node::create(
++      array(
++        'nid' => NULL,
++        'type' => $this->testNodeType->id(),
++        'title' => 'Test Behavior Settings Node',
++      )
++    );
++  }
++
++  /**
++   * Helper function to create the test node type in the database.
++   */
++  private function createTestNodeType() {
++    $this->testNodeType->save();
++  }
++
++  /**
++   * Helper function to delete the test node type from the database.
++   */
++  private function deleteTestNodeType() {
++    $this->testNodeType->delete();
++  }
++
++  /**
++   * Helper function to create the test node in the database.
++   */
++  private function createTestNode() {
++    $this->testNode->save();
++  }
++
++  /**
++   * Helper function to delete the test node from the database.
++   */
++  private function deleteTestNode() {
++    $this->testNode->delete();
++  }
++
++}
+-- 
+2.5.5
+
