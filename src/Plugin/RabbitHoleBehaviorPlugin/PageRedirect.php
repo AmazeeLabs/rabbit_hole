@@ -107,6 +107,10 @@ class PageRedirect extends RabbitHoleBehaviorPluginBase implements ContainerFact
     if (substr($target, 0, 4) == '<?php') {
       // TODO: Evaluate PHP code.
     }
+    elseif ($target === '<front>' || $target === '/<front>') {
+      // Special case for redirecting to the front page.
+      $target = \Drupal::service('url_generator')->generateFromRoute('<front>', [], []);
+    }
 
     switch ($response_code) {
       case self::REDIRECT_MOVED_PERMANENTLY:
