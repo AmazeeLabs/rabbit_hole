@@ -11,6 +11,7 @@ use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager;
 use Drupal\rabbit_hole\Entity\BehaviorSettings;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Class FormManglerService.
