@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains rh_user.module.
+ * Contains rh_file.module.
  */
 
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -10,9 +10,9 @@ use Drupal\Core\Entity\EntityTypeInterface;
 /**
  * Implements hook_entity_base_field_info().
  */
-function rh_user_entity_base_field_info(EntityTypeInterface $entity_type) {
-  if ($entity_type->id() == 'user') {
+function rh_file_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->id() == 'file') {
     return \Drupal::service('rabbit_hole.entity_extender')
-      ->getRabbitHoleFields('user');
+      ->getRabbitHoleFields('file');
   }
 }

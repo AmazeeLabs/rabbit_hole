@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\Entity\BehaviorSettings.
- */
-
 namespace Drupal\rabbit_hole\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;

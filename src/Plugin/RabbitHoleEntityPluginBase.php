@@ -1,19 +1,14 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginBase.
- */
-
 namespace Drupal\rabbit_hole\Plugin;
 
 use Drupal\Component\Plugin\PluginBase;
-use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginInterface;
 
 /**
  * Base class for Rabbit hole entity plugin plugins.
  */
 abstract class RabbitHoleEntityPluginBase extends PluginBase implements RabbitHoleEntityPluginInterface {
+
   /**
    * {@inheritdoc}
    */

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\BehaviourSettingsManagerInterface.
- */
-
 namespace Drupal\rabbit_hole;
 
 /**

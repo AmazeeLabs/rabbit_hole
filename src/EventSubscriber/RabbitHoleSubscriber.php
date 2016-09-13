@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\EventSubscriber.
- */
-
 namespace Drupal\rabbit_hole\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\Event;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\rabbit_hole\BehaviorInvoker;
 
 /**
@@ -90,7 +86,7 @@ class RabbitHoleSubscriber implements EventSubscriberInterface {
       $entity_keys = $this->rabbitHoleBehaviorInvoker->getPossibleEntityTypeKeys();
       foreach ($entity_keys as $ekey) {
         $entity = $event->getRequest()->get($ekey);
-        if (isset($entity)) {
+        if (isset($entity) && $entity instanceof ContentEntityInterface) {
           $new_response = $this->rabbitHoleBehaviorInvoker
             ->processEntity($entity, $event->getResponse());
           if (isset($new_response)) {

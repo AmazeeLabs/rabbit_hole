@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\EntityExtender.
- */
-
 namespace Drupal\rabbit_hole;
 
 use Drupal\Core\Field\BaseFieldDefinition;

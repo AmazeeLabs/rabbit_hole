@@ -1,6 +1,13 @@
 <?php
 
 /**
+ * @file
+ * Contains rh_node.module.
+ */
+
+use Drupal\Core\Entity\EntityTypeInterface;
+
+/**
  * Implements hook_form_FORM_ID_alter().
  *
  * This will add Rabbit Hole options to the node type form. These settings will
@@ -26,7 +33,10 @@ function rh_node_form_node_form_alter(&$form, $form_state) {
   // rh_node permission.
 }
 
-function rh_node_entity_base_field_info(\Drupal\Core\Entity\EntityTypeInterface $entity_type) {
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function rh_node_entity_base_field_info(EntityTypeInterface $entity_type) {
   if ($entity_type->id() == 'node') {
     return \Drupal::service('rabbit_hole.entity_extender')
       ->getRabbitHoleFields('node');

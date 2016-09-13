@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginInterface.
- */
-
 namespace Drupal\rabbit_hole\Plugin;
 
 use Drupal\Core\Entity\Entity;

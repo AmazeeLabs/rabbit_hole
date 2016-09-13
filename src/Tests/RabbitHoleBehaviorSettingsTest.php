@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\rabbit_hole\Tests\RabbitHoleBehaviorSettingsTest.
- */
 
 namespace Drupal\rabbit_hole\Tests;
 

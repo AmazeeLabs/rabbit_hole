@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\BehaviorSettingsManager.
- */
-
 namespace Drupal\rabbit_hole;
 
 use Drupal\Core\Config\ConfigFactory;
@@ -84,7 +79,6 @@ class BehaviorSettingsManager implements BehaviorSettingsManagerInterface {
     );
     return !$actual->isNew() ? $actual : NULL;
   }
-
 
   /**
    * Generate a full ID based on entity type label, bundle label and entity id.

@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin\PageNotFound.
- */
 
 namespace Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPlugin;
 

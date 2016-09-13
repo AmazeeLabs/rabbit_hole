@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\RabbitHoleGeneratedPermissions.
- */
-
 namespace Drupal\rabbit_hole;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -14,6 +9,11 @@ use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 
+/**
+ * Class RabbitHolePermissionGenerator.
+ *
+ * @package Drupal\rabbit_hole
+ */
 class RabbitHolePermissionGenerator implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
@@ -45,9 +45,10 @@ class RabbitHolePermissionGenerator implements ContainerInjectionInterface {
   }
 
   /**
-   * Return an array of per-entity rabbit hole permissions
+   * Return an array of per-entity rabbit hole permissions.
+   *
    * @return array
-   *  An array of permissions
+   *   An array of permissions
    */
   public function permissions() {
     $permissions = [];
@@ -57,19 +58,20 @@ class RabbitHolePermissionGenerator implements ContainerInjectionInterface {
               ->getStorage($def['entityType'])
               ->getEntityType();
       $permissions += array(
-          'rabbit hole administer ' . $def['entityType'] => array(
-              'title' => $this->t(
+        'rabbit hole administer ' . $def['entityType'] => array(
+          'title' => $this->t(
                       'Administer Rabbit Hole settings for %entity_type',
                       array('%entity_type' => $entity_type->getLabel())),
-          ),
-          'rabbit hole bypass ' . $def['entityType'] => array(
-              'title' => $this->t(
+        ),
+        'rabbit hole bypass ' . $def['entityType'] => array(
+          'title' => $this->t(
                       'Bypass Rabbit Hole action for %entity_type',
                       array('%entity_type' => $entity_type->getLabel())),
-          )
+        ),
       );
     }
 
     return $permissions;
   }
+
 }

@@ -1,19 +1,19 @@
 <?php
 
-namespace Drupal\rh_node\Plugin\RabbitHoleEntityPlugin;
+namespace Drupal\rh_taxonomy\Plugin\RabbitHoleEntityPlugin;
 
 use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginBase;
 
 /**
- * Implements rabbit hole behavior for nodes.
+ * Implements rabbit hole behavior for taxonomy.
  *
  * @RabbitHoleEntityPlugin(
- *  id = "rh_node",
- *  label = @Translation("Node"),
- *  entityType = "node"
+ *  id = "rh_taxonomy_term",
+ *  label = @Translation("Taxonomy Term"),
+ *  entityType = "taxonomy_term"
  * )
  */
-class Node extends RabbitHoleEntityPluginBase {
+class Taxonomy extends RabbitHoleEntityPluginBase {
 
   /**
    * {@inheritdoc}
@@ -21,7 +21,6 @@ class Node extends RabbitHoleEntityPluginBase {
   public function getFormSubmitHandlerAttachLocations() {
     return array(
       array('actions', 'submit', '#submit'),
-      array('actions', 'publish', '#submit'),
     );
   }
 

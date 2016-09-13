@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\rh_node\Tests\RabbitHoleBehaviorSettingsFormAlterationsTest.
- */
 
 namespace Drupal\rh_node\Tests;
 
@@ -44,7 +40,7 @@ class BehaviorSettingsFormAlterationsTest extends WebTestBase {
     // permissions.
     $this->user = $this->drupalCreateUser(array(
       'bypass node access', 'administer content types',
-      'rabbit hole administer node'
+      'rabbit hole administer node',
     ));
 
     $this->behaviorSettingsManager = $this->container

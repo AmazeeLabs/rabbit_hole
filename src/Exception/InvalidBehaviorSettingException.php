@@ -1,20 +1,18 @@
 <?php
-/**
- * @file
- * Contains \Drupal\rabbit_hole\Exception\InvalidBehaviorSettingException.
- */
 
 namespace Drupal\rabbit_hole\Exception;
 
 /**
- * TODO.
+ * Class InvalidBehaviorSettingException.
+ *
+ * @package Drupal\rabbit_hole
  */
 class InvalidBehaviorSettingException extends \Exception {
 
   private $setting;
 
   /**
-   * TODO.
+   * Constructor.
    */
   public function __construct($setting) {
     parent::__construct();
@@ -22,7 +20,7 @@ class InvalidBehaviorSettingException extends \Exception {
   }
 
   /**
-   * TODO.
+   * Get the invalid setting.
    */
   public function getSetting() {
     return $this->setting();

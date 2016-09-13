@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\Annotation\RabbitHoleBehaviorPlugin.
- */
-
 namespace Drupal\rabbit_hole\Annotation;
 
 use Drupal\Component\Annotation\Plugin;

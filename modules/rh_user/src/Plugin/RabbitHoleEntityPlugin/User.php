@@ -1,20 +1,15 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rh_user\Plugin\RabbitHoleEntityPlugin\Node.
- */
-
 namespace Drupal\rh_user\Plugin\RabbitHoleEntityPlugin;
 
 use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginBase;
 
 /**
- * Implements rabbit hole behavior for nodes.
+ * Implements rabbit hole behavior for users.
  *
  * @RabbitHoleEntityPlugin(
  *  id = "rh_user",
- *  label = @Translation("Node"),
+ *  label = @Translation("User"),
  *  entityType = "user"
  * )
  */
@@ -40,7 +35,7 @@ class User extends RabbitHoleEntityPluginBase {
    * {@inheritdoc}
    */
   public function getGlobalFormSubmitHandlerAttachLocations() {
-    return array(array('actions', 'submit', '#submit'));
+    return array('#submit');
   }
 
 }

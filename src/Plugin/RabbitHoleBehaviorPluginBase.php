@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginBase.
- */
 
 namespace Drupal\rabbit_hole\Plugin;
 

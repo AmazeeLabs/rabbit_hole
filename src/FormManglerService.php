@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\rabbit_hole\FormManglerService.
- */
-
 namespace Drupal\rabbit_hole;
 
 use Drupal\Core\Entity\Entity;
@@ -13,7 +8,6 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\rabbit_hole\Plugin\RabbitHoleBehaviorPluginManager;
 use Drupal\rabbit_hole\Plugin\RabbitHoleEntityPluginManager;
-use Drupal\rabbit_hole\BehaviorSettingsManager;
 use Drupal\rabbit_hole\Entity\BehaviorSettings;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
@@ -62,11 +56,12 @@ class FormManglerService {
    * @param string $entity_type
    *   The name of the entity for which this form provides global options.
    */
-  public function addRabbitHoleOptionsToGlobalForm(array &$attach, $entity_type) {
+  public function addRabbitHoleOptionsToGlobalForm(array &$attach, $entity_type, FormStateInterface $form_state, $form_id) {
     $entity_type = $this->entityTypeManager->getStorage($entity_type)
       ->getEntityType();
 
-    $this->addRabbitHoleOptionsToForm($attach, $entity_type->id());
+    $this->addRabbitHoleOptionsToForm($attach, $entity_type->id(), NULL,
+      $form_state, $form_id);
   }
 
   /**
@@ -82,9 +77,9 @@ class FormManglerService {
    *    defined even in the case of bundles since it is used to determine bundle
    *    and entity type.
    */
-  public function addRabbitHoleOptionsToEntityForm(array &$attach, Entity $entity) {
+  public function addRabbitHoleOptionsToEntityForm(array &$attach, Entity $entity, FormStateInterface $form_state, $form_id) {
     $this->addRabbitHoleOptionsToForm($attach, $entity->getEntityType()->id(),
-            $entity);
+      $entity, $form_state, $form_id);
   }
 
   /**
@@ -99,8 +94,9 @@ class FormManglerService {
    *    defined even in the case of bundles since it is used to determine bundle
    *    and entity type.
    */
-  private function addRabbitHoleOptionsToForm(array &$attach,
-    $entity_type_id, $entity = NULL) {
+  private function addRabbitHoleOptionsToForm(array &$attach, $entity_type_id,
+    $entity, FormStateInterface $form_state, $form_id) {
+
     $entity_type = $this->entityTypeManager->getStorage($entity_type_id)
       ->getEntityType();
 
@@ -141,9 +137,10 @@ class FormManglerService {
         : 'bundle_default';
     }
 
+    $is_bundle = $this->isEntityBundle($entity);
     $entity_plugin = $this->rhEntityPluginManager->createInstanceByEntityType(
-      $is_bundle_or_entity_type ? $entity_type->getBundleOf()
-            : $entity_type->id());
+      $is_bundle_or_entity_type && !empty($entity_type->getBundleOf())
+        ? $entity_type->getBundleOf() : $entity_type->id());
 
     // If the user doesn't have access, exit.
     // If the form is about to be attached to an entity, but the bundle isn't
@@ -218,31 +215,9 @@ class FormManglerService {
       '#attributes' => array('class' => array('rabbit-hole-action-setting')),
     );
 
-    $this->populateExtraBehaviorSections($form, NULL, NULL, $entity,
+    $this->populateExtraBehaviorSections($form, $form_state, $form_id, $entity,
       $is_bundle_or_entity_type, $bundle_settings);
 
-    // TODO: Add redirect settings.
-    //
-    // Wrap the redirect settings in a fieldset.
-    // Get the default value for the redirect path.
-    // Build the descriptive text. Add some help text for PHP, if the user has
-    // the permission to use PHP for evaluation.
-    // Add the redirect path setting.
-    //
-    // TODO: Add token support.
-    //
-    // Display a list of tokens if the Token module is enabled.
-    //
-    // TODO: Add specific options for redirect - possibly via the plugin?
-    //
-    // Add the redirect response setting.
-    //
-    // TODO: Handle possible PHP code in redirect.
-    //
-    // If the redirect path contains PHP, and the user doesn't have permission
-    // to use PHP for evaluation, we'll disable access to the path setting, and
-    // print some helpful information about what's going on.
-    //
     // Attach the Rabbit Hole form to the main form, and add a custom validation
     // callback.
     $attach += $form;
@@ -256,13 +231,21 @@ class FormManglerService {
     //
     // TODO: This should probably be moved out into plugins based on entity
     // type.
-    $submit_handler_locations = $entity_plugin
-      ->getFormSubmitHandlerAttachLocations();
+    $is_global_form = isset($attach['#form_id'])
+      && $attach['#form_id'] === $entity_plugin->getGlobalConfigFormId();
+    $submit_handler_locations = $is_global_form
+      ? $entity_plugin->getGlobalFormSubmitHandlerAttachLocations()
+      : $entity_plugin->getFormSubmitHandlerAttachLocations();
 
     foreach ($submit_handler_locations as $location) {
       $array_ref = &$attach;
-      foreach ($location as $subkey) {
-        $array_ref = &$array_ref[$subkey];
+      if (is_array($location)) {
+        foreach ($location as $subkey) {
+          $array_ref = &$array_ref[$subkey];
+        }
+      }
+      else {
+        $array_ref = &$array_ref[$location];
       }
       $array_ref[] = '_rabbit_hole_general_form_submit';
     }

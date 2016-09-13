@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\rh_node\Tests\InvocationTest.
- */
 
 namespace Drupal\rh_node\Tests;
 
